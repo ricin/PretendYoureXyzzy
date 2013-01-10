@@ -40,6 +40,5 @@ ConnectedUsers users = injector.getInstance(ConnectedUsers.class);
 GameManager games = injector.getInstance(GameManager.class);
 
 out.clear();
-out.println("USERS " + users.getUsers().size());
-out.println("GAMES " + games.getGameList().size());
+out.println("USERS " + users.getUsers().size() + " | GAMES " + games.getGameList().size());
 %>

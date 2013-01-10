@@ -87,6 +87,7 @@ public class RegisterHandler extends Handler {
       if (!validName.matcher(nick).matches()) {
         return error(ErrorCode.INVALID_NICK);
       } else {
+      	logger.info(String.format("User: %s\tAddress: %s", nick, request.getRemoteAddr()));
         final User user = new User(nick, request.getRemoteAddr(),
             Constants.ADMIN_IP_ADDRESSES.contains(request.getRemoteAddr()));
         if (users.checkAndAdd(user)) {

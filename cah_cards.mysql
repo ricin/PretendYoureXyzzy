@@ -1,222 +1,46 @@
--- Pretend You're Xyzzy cards by Andy Janata is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
--- Based on a work at www.cardsagainsthumanity.com.
--- For more information, see http://creativecommons.org/licenses/by-nc-sa/3.0/
+# Converted with pg2mysql-1.9
+# Converted on Sun, 06 Jan 2013 07:27:41 -0500
+# Lightbox Technologies Inc. http://www.lightbox.ca
 
--- This file contains the Black Cards and White Cards for Cards Against Humanity, as a script for importing into PostgreSQL. There should be a user named cah.
--- Includes the First and Second Expansions, as well as the Canadian version cards, and 2012 Holiday Pack.
--- Also includes r/MLPLounge cards from http://www.reddit.com/r/MLPLounge/comments/10f2t3/cards_against_equinity/
-
---
--- PostgreSQL database dump
---
-
--- Dumped from database version 9.1.6
--- Dumped by pg_dump version 9.1.3
--- Started on 2012-12-07 18:41:35
-
-SET statement_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SET check_function_bodies = false;
-SET client_min_messages = warning;
-
-SET search_path = public, pg_catalog;
-
-SET default_tablespace = '';
-
-SET default_with_oids = false;
-
---
--- TOC entry 161 (class 1259 OID 16572)
--- Dependencies: 1908 1909 1910 1911 6
--- Name: black_cards; Type: TABLE; Schema: public; Owner: cah; Tablespace: 
---
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+SET time_zone="+00:00";
 
 CREATE TABLE black_cards (
-    id integer NOT NULL,
-    text character varying(255) NOT NULL,
+    id int(11) NOT NULL,
+    text varchar(255) NOT NULL,
     draw smallint DEFAULT 0,
     pick smallint DEFAULT 1,
-    creator integer,
-    in_v1 boolean DEFAULT false NOT NULL,
-    in_v2 boolean DEFAULT false NOT NULL,
-    watermark character varying(5)
-);
-
-
-ALTER TABLE public.black_cards OWNER TO cah;
-
---
--- TOC entry 1941 (class 0 OID 0)
--- Dependencies: 161
--- Name: COLUMN black_cards.creator; Type: COMMENT; Schema: public; Owner: cah
---
-
-COMMENT ON COLUMN black_cards.creator IS 'NULL for default card, non-NULL for user id';
-
-
---
--- TOC entry 162 (class 1259 OID 16579)
--- Dependencies: 161 6
--- Name: black_cards_id_seq; Type: SEQUENCE; Schema: public; Owner: cah
---
-
-CREATE SEQUENCE black_cards_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.black_cards_id_seq OWNER TO cah;
-
---
--- TOC entry 1942 (class 0 OID 0)
--- Dependencies: 162
--- Name: black_cards_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: cah
---
-
-ALTER SEQUENCE black_cards_id_seq OWNED BY black_cards.id;
-
-
---
--- TOC entry 1943 (class 0 OID 0)
--- Dependencies: 162
--- Name: black_cards_id_seq; Type: SEQUENCE SET; Schema: public; Owner: cah
---
-
-SELECT pg_catalog.setval('black_cards_id_seq', 98, true);
-
-
---
--- TOC entry 163 (class 1259 OID 16581)
--- Dependencies: 6
--- Name: card_set; Type: TABLE; Schema: public; Owner: cah; Tablespace: 
---
+    creator int(11),
+    in_v1 bool DEFAULT 0 NOT NULL,
+    in_v2 bool DEFAULT 0 NOT NULL,
+    watermark varchar(5)
+) TYPE=MyISAM;
 
 CREATE TABLE card_set (
-    id integer NOT NULL,
-    active boolean NOT NULL,
-    name character varying(255),
-    base_deck boolean NOT NULL
-);
-
-
-ALTER TABLE public.card_set OWNER TO cah;
-
---
--- TOC entry 164 (class 1259 OID 16584)
--- Dependencies: 6
--- Name: card_set_black_card; Type: TABLE; Schema: public; Owner: cah; Tablespace: 
---
+    id int(11) NOT NULL,
+    active bool NOT NULL,
+    name varchar(255),
+    base_deck bool NOT NULL
+) TYPE=MyISAM;
 
 CREATE TABLE card_set_black_card (
-    card_set_id integer NOT NULL,
-    black_card_id integer NOT NULL
-);
-
-
-ALTER TABLE public.card_set_black_card OWNER TO cah;
-
---
--- TOC entry 165 (class 1259 OID 16587)
--- Dependencies: 6
--- Name: card_set_white_card; Type: TABLE; Schema: public; Owner: cah; Tablespace: 
---
+    card_set_id int(11) NOT NULL,
+    black_card_id int(11) NOT NULL
+) TYPE=MyISAM;
 
 CREATE TABLE card_set_white_card (
-    card_set_id integer NOT NULL,
-    white_card_id integer NOT NULL
-);
-
-
-ALTER TABLE public.card_set_white_card OWNER TO cah;
-
---
--- TOC entry 170 (class 1259 OID 16601)
--- Dependencies: 1913 1914 6
--- Name: white_cards; Type: TABLE; Schema: public; Owner: cah; Tablespace: 
---
+    card_set_id int(11) NOT NULL,
+    white_card_id int(11) NOT NULL
+) TYPE=MyISAM;
 
 CREATE TABLE white_cards (
-    id integer NOT NULL,
-    text character varying(255) NOT NULL,
-    creator integer,
-    in_v1 boolean DEFAULT false NOT NULL,
-    in_v2 boolean DEFAULT false NOT NULL,
-    watermark character varying(5)
-);
-
-
-ALTER TABLE public.white_cards OWNER TO cah;
-
---
--- TOC entry 1944 (class 0 OID 0)
--- Dependencies: 170
--- Name: COLUMN white_cards.creator; Type: COMMENT; Schema: public; Owner: cah
---
-
-COMMENT ON COLUMN white_cards.creator IS 'NULL for default, non-NULL for user id';
-
-
---
--- TOC entry 171 (class 1259 OID 16606)
--- Dependencies: 6 170
--- Name: white_cards_id_seq; Type: SEQUENCE; Schema: public; Owner: cah
---
-
-CREATE SEQUENCE white_cards_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.white_cards_id_seq OWNER TO cah;
-
---
--- TOC entry 1945 (class 0 OID 0)
--- Dependencies: 171
--- Name: white_cards_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: cah
---
-
-ALTER SEQUENCE white_cards_id_seq OWNED BY white_cards.id;
-
-
---
--- TOC entry 1946 (class 0 OID 0)
--- Dependencies: 171
--- Name: white_cards_id_seq; Type: SEQUENCE SET; Schema: public; Owner: cah
---
-
-SELECT pg_catalog.setval('white_cards_id_seq', 508, true);
-
-
---
--- TOC entry 1912 (class 2604 OID 16608)
--- Dependencies: 162 161
--- Name: id; Type: DEFAULT; Schema: public; Owner: cah
---
-
-ALTER TABLE ONLY black_cards ALTER COLUMN id SET DEFAULT nextval('black_cards_id_seq'::regclass);
-
-
---
--- TOC entry 1915 (class 2604 OID 16609)
--- Dependencies: 171 170
--- Name: id; Type: DEFAULT; Schema: public; Owner: cah
---
-
-ALTER TABLE ONLY white_cards ALTER COLUMN id SET DEFAULT nextval('white_cards_id_seq'::regclass);
-
-
---
--- TOC entry 1934 (class 0 OID 16572)
--- Dependencies: 161
--- Data for Name: black_cards; Type: TABLE DATA; Schema: public; Owner: cah
---
+    id int(11) NOT NULL,
+    text varchar(255) NOT NULL,
+    creator int(11),
+    in_v1 bool DEFAULT 0 NOT NULL,
+    in_v2 bool DEFAULT 0 NOT NULL,
+    watermark varchar(5)
+) TYPE=MyISAM;
 
 INSERT INTO black_cards VALUES (16, 'Who stole the cookies from the cookie jar?', 0, 1, NULL, true, false, NULL);
 INSERT INTO black_cards VALUES (23, 'I wish I hadn''t lost the instruction manual for _____.', 0, 1, NULL, true, false, NULL);
@@ -227,7 +51,7 @@ INSERT INTO black_cards VALUES (55, 'Due to a PR fiasco, Walmart no longer offer
 INSERT INTO black_cards VALUES (69, 'Life was difficult for cavemen before _____.', 0, 1, NULL, true, false, NULL);
 INSERT INTO black_cards VALUES (1, 'Why can''t I sleep at night?', 0, 1, NULL, true, true, NULL);
 INSERT INTO black_cards VALUES (4, 'What''s that smell?', 0, 1, NULL, true, true, NULL);
-INSERT INTO black_cards VALUES (17, 'What''s the next Happy Meal® toy?', 0, 1, NULL, true, true, NULL);
+INSERT INTO black_cards VALUES (17, 'What''s the next Happy MealÂ® toy?', 0, 1, NULL, true, true, NULL);
 INSERT INTO black_cards VALUES (18, 'Anthropologists have recently discovered a primitive tribe that worships _____.', 0, 1, NULL, true, true, NULL);
 INSERT INTO black_cards VALUES (19, 'It''s a pity that kids these days are all getting involved with _____.', 0, 1, NULL, true, true, NULL);
 INSERT INTO black_cards VALUES (14, 'Alternative medicine is now embracing the curative powers of _____.', 0, 1, NULL, true, true, NULL);
@@ -289,7 +113,7 @@ INSERT INTO black_cards VALUES (63, 'What am I giving up for Lent?', 0, 1, NULL,
 INSERT INTO black_cards VALUES (64, 'In Michael Jackson''s final moments, he thought about _____.', 0, 1, NULL, true, true, NULL);
 INSERT INTO black_cards VALUES (65, 'In an attempt to reach a wider audience, the Smithsonian Museum of Natural History has opened an interactive exhibit on _____.', 0, 1, NULL, true, true, NULL);
 INSERT INTO black_cards VALUES (45, 'When I am the President of the United States, I will create the Department of _____.', 0, 1, NULL, true, true, NULL);
-INSERT INTO black_cards VALUES (87, 'Lifetime® presents _____, the story of _____.', 0, 2, NULL, true, true, NULL);
+INSERT INTO black_cards VALUES (87, 'LifetimeÂ® presents _____, the story of _____.', 0, 2, NULL, true, true, NULL);
 INSERT INTO black_cards VALUES (47, 'When I am a billionare, I shall erect a 50-foot statue to commemorate _____.', 0, 1, NULL, true, true, NULL);
 INSERT INTO black_cards VALUES (88, 'When I was tripping on acid, _____ turned into _____.', 0, 2, NULL, true, true, NULL);
 INSERT INTO black_cards VALUES (89, 'That''s right, I killed _____. How, you ask? _____.', 0, 2, NULL, true, true, NULL);
@@ -400,10 +224,10 @@ INSERT INTO black_cards VALUES (1315, 'Luna didn''t help in the fight against Ch
 INSERT INTO black_cards VALUES (1317, 'My cutie mark would be ____.', 0, 1, NULL, false, false, 'MLP');
 INSERT INTO black_cards VALUES (1319, 'Not many people know that Tara Strong is also the voice of ____.', 0, 1, NULL, false, false, 'MLP');
 INSERT INTO black_cards VALUES (1321, 'Nothing makes Pinkie smile more than ____.', 0, 1, NULL, false, false, 'MLP');
-INSERT INTO black_cards VALUES (1458, 'This holiday season, Tim Allen must overcome his fear of ____ to save Christmas.', 0, 1, NULL, false, false, '❄');
-INSERT INTO black_cards VALUES (1459, 'Jesus is ____.', 0, 1, NULL, false, false, '❄');
-INSERT INTO black_cards VALUES (1462, 'On the third day of Christmas, my true love gave to me: three French hens, two turtle doves, and ____.', 0, 1, NULL, false, false, '❄');
-INSERT INTO black_cards VALUES (1463, 'Wake up, America. Christmas is under attack by secular liberals and their ____.', 0, 1, NULL, false, false, '❄');
+INSERT INTO black_cards VALUES (1458, 'This holiday season, Tim Allen must overcome his fear of ____ to save Christmas.', 0, 1, NULL, false, false, 'â„');
+INSERT INTO black_cards VALUES (1459, 'Jesus is ____.', 0, 1, NULL, false, false, 'â„');
+INSERT INTO black_cards VALUES (1462, 'On the third day of Christmas, my true love gave to me: three French hens, two turtle doves, and ____.', 0, 1, NULL, false, false, 'â„');
+INSERT INTO black_cards VALUES (1463, 'Wake up, America. Christmas is under attack by secular liberals and their ____.', 0, 1, NULL, false, false, 'â„');
 INSERT INTO black_cards VALUES (1291, 'Everypony was shocked to discover that Scootaloo''s cutie mark was ____.', 0, 1, NULL, false, false, 'MLP');
 INSERT INTO black_cards VALUES (1292, 'Giggle at ____!', 0, 1, NULL, false, false, 'MLP');
 INSERT INTO black_cards VALUES (1295, 'I never knew what ____ could be, until you all shared its ____ with me.', 0, 2, NULL, false, false, 'MLP');
@@ -437,17 +261,9 @@ INSERT INTO black_cards VALUES (1375, 'When Spike is asleep, Twilight likes to r
 INSERT INTO black_cards VALUES (1376, 'Without any warning, Pinkie Pie burst into a song about ____.', 0, 1, NULL, false, false, 'MLP');
 INSERT INTO black_cards VALUES (1377, 'You''re a human transported to Equestria! The first thing you''d look for is ____.', 0, 1, NULL, false, false, 'MLP');
 INSERT INTO black_cards VALUES (1378, 'Zecora is a well known supplier of ____ and ____.', 0, 2, NULL, false, false, 'MLP');
-INSERT INTO black_cards VALUES (1460, 'Every Christmas, my uncle gets drunk and tells the story about ____.', 0, 1, NULL, false, false, '❄');
-INSERT INTO black_cards VALUES (1461, 'What keeps me warm during the cold, cold winter?', 0, 1, NULL, false, false, '❄');
-INSERT INTO black_cards VALUES (1457, 'After blacking out during New Year''s Eve, I was awoken by ____.', 0, 1, NULL, false, false, '❄');
-
-
---
--- TOC entry 1935 (class 0 OID 16581)
--- Dependencies: 163
--- Data for Name: card_set; Type: TABLE DATA; Schema: public; Owner: cah
---
-
+INSERT INTO black_cards VALUES (1460, 'Every Christmas, my uncle gets drunk and tells the story about ____.', 0, 1, NULL, false, false, 'â„');
+INSERT INTO black_cards VALUES (1461, 'What keeps me warm during the cold, cold winter?', 0, 1, NULL, false, false, 'â„');
+INSERT INTO black_cards VALUES (1457, 'After blacking out during New Year''s Eve, I was awoken by ____.', 0, 1, NULL, false, false, 'â„');
 INSERT INTO card_set VALUES (1153, true, 'Canadian', false);
 INSERT INTO card_set VALUES (1154, true, 'Misprint Replacement Bonus Cards', false);
 INSERT INTO card_set VALUES (1155, true, 'The First Expansion', false);
@@ -456,14 +272,6 @@ INSERT INTO card_set VALUES (1152, true, 'Second Version', true);
 INSERT INTO card_set VALUES (1256, true, 'The Second Expansion', false);
 INSERT INTO card_set VALUES (1456, true, '[CUSTOM] r/MLPLounge', false);
 INSERT INTO card_set VALUES (1488, true, '2012 Holiday Pack', false);
-
-
---
--- TOC entry 1936 (class 0 OID 16584)
--- Dependencies: 164
--- Data for Name: card_set_black_card; Type: TABLE DATA; Schema: public; Owner: cah
---
-
 INSERT INTO card_set_black_card VALUES (1151, 1);
 INSERT INTO card_set_black_card VALUES (1151, 2);
 INSERT INTO card_set_black_card VALUES (1151, 3);
@@ -762,14 +570,6 @@ INSERT INTO card_set_black_card VALUES (1488, 1460);
 INSERT INTO card_set_black_card VALUES (1488, 1461);
 INSERT INTO card_set_black_card VALUES (1488, 1462);
 INSERT INTO card_set_black_card VALUES (1488, 1463);
-
-
---
--- TOC entry 1937 (class 0 OID 16587)
--- Dependencies: 165
--- Data for Name: card_set_white_card; Type: TABLE DATA; Schema: public; Owner: cah
---
-
 INSERT INTO card_set_white_card VALUES (1151, 1);
 INSERT INTO card_set_white_card VALUES (1151, 2);
 INSERT INTO card_set_white_card VALUES (1151, 3);
@@ -2036,14 +1836,6 @@ INSERT INTO card_set_white_card VALUES (1488, 1483);
 INSERT INTO card_set_white_card VALUES (1488, 1482);
 INSERT INTO card_set_white_card VALUES (1488, 1481);
 INSERT INTO card_set_white_card VALUES (1488, 1480);
-
-
---
--- TOC entry 1938 (class 0 OID 16601)
--- Dependencies: 170
--- Data for Name: white_cards; Type: TABLE DATA; Schema: public; Owner: cah
---
-
 INSERT INTO white_cards VALUES (282, 'Michelle Obama''s arms.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (124, 'White people.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (393, 'An erection that lasts longer than four hours.', NULL, true, true, NULL);
@@ -2053,7 +1845,7 @@ INSERT INTO white_cards VALUES (269, 'A middle-aged man on roller skates.', NULL
 INSERT INTO white_cards VALUES (1, 'Coat hanger abortions.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (138, 'Scrubbing under the folds.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (275, 'Wearing underwear inside-out to avoid doing laundry.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (167, 'The Tempur-Pedic® Swedish Sleep System™.', NULL, true, true, NULL);
+INSERT INTO white_cards VALUES (167, 'The Tempur-PedicÂ® Swedish Sleep Systemâ„¢.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (1146, 'end First Expansion', NULL, false, false, NULL);
 INSERT INTO white_cards VALUES (461, 'Flying sex snakes', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (462, 'MechaHitler.', NULL, false, true, '1.2');
@@ -2066,7 +1858,7 @@ INSERT INTO white_cards VALUES (468, 'Chutzpah.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (469, 'Unfathomable stupidity.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (470, 'Horrifying laser hair removal accidents.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (471, 'Boogers.', NULL, false, true, '1.2');
-INSERT INTO white_cards VALUES (472, 'A Bop It™.', NULL, false, true, '1.2');
+INSERT INTO white_cards VALUES (472, 'A Bop Itâ„¢.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (473, 'Expecting a burp and vomiting on the floor.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (474, 'A defective condom.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (475, 'Teenage pregnancy.', NULL, false, true, '1.2');
@@ -2079,12 +1871,12 @@ INSERT INTO white_cards VALUES (481, 'The chronic.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (483, '"Tweeting."', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (484, 'Firing a rifle into the air while balls deep in a squealing hog.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (485, 'Nicolas Cage.', NULL, false, true, '1.2');
-INSERT INTO white_cards VALUES (482, 'Home video of Oprah sobbing into a Lean Cuisine®.', NULL, false, true, '1.2');
+INSERT INTO white_cards VALUES (482, 'Home video of Oprah sobbing into a Lean CuisineÂ®.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (1110, 'Leveling up.', NULL, false, false, 'X1');
 INSERT INTO white_cards VALUES (1111, 'Literally eating shit.', NULL, false, false, 'X1');
 INSERT INTO white_cards VALUES (1112, 'Making the penises kiss.', NULL, false, false, 'X1');
 INSERT INTO white_cards VALUES (1113, 'Media coverage.', NULL, false, false, 'X1');
-INSERT INTO white_cards VALUES (1114, 'Medieval Times® Dinner & Tournament.', NULL, false, false, 'X1');
+INSERT INTO white_cards VALUES (1114, 'Medieval TimesÂ® Dinner & Tournament.', NULL, false, false, 'X1');
 INSERT INTO white_cards VALUES (1115, 'Moral ambiguity.', NULL, false, false, 'X1');
 INSERT INTO white_cards VALUES (1116, 'My machete.', NULL, false, false, 'X1');
 INSERT INTO white_cards VALUES (1117, 'One thousand Slim Jims.', NULL, false, false, 'X1');
@@ -2110,10 +1902,10 @@ INSERT INTO white_cards VALUES (225, 'Dropping a chandelier on your enemies and 
 INSERT INTO white_cards VALUES (297, 'Public ridicule.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (265, 'A snapping turtle biting the tip of your penis.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (218, 'Vehicular manslaughter.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (267, 'Domino''s™ Oreo™ Dessert Pizza.', NULL, true, true, NULL);
+INSERT INTO white_cards VALUES (267, 'Domino''sâ„¢ Oreoâ„¢ Dessert Pizza.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (160, 'The token minority.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (486, 'Euphoria™ by Calvin Klein.', NULL, false, true, '1.2');
-INSERT INTO white_cards VALUES (487, 'Switching to Geico®.', NULL, false, true, '1.2');
+INSERT INTO white_cards VALUES (486, 'Euphoriaâ„¢ by Calvin Klein.', NULL, false, true, '1.2');
+INSERT INTO white_cards VALUES (487, 'Switching to GeicoÂ®.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (488, 'A gentle caress of the inner thigh.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (489, 'Poor life choices.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (490, 'Embryonic stem cells.', NULL, false, true, '1.2');
@@ -2133,9 +1925,9 @@ INSERT INTO white_cards VALUES (503, 'Crystal meth.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (504, 'My inner demons.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (505, 'Pac-Man uncontrollably guzzling cum.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (506, 'My vagina.', NULL, false, true, '1.2');
-INSERT INTO white_cards VALUES (507, 'The Donald Trump Seal of Approval™.', NULL, false, true, '1.2');
+INSERT INTO white_cards VALUES (507, 'The Donald Trump Seal of Approvalâ„¢.', NULL, false, true, '1.2');
 INSERT INTO white_cards VALUES (508, 'The true meaning of Christmas.', NULL, false, true, '1.2');
-INSERT INTO white_cards VALUES (1136, 'The Fanta® girls.', NULL, false, false, 'X1');
+INSERT INTO white_cards VALUES (1136, 'The FantaÂ® girls.', NULL, false, false, 'X1');
 INSERT INTO white_cards VALUES (1137, 'The Gulags.', NULL, false, false, 'X1');
 INSERT INTO white_cards VALUES (1138, 'The harsh light of day.', NULL, false, false, 'X1');
 INSERT INTO white_cards VALUES (1139, 'The hiccups.', NULL, false, false, 'X1');
@@ -2172,7 +1964,7 @@ INSERT INTO white_cards VALUES (1222, 'Dining with cardboard cutouts of the cast
 INSERT INTO white_cards VALUES (1223, 'Another shot of morphine.', NULL, false, false, 'X2');
 INSERT INTO white_cards VALUES (1226, 'Bullshit.', NULL, false, false, 'X2');
 INSERT INTO white_cards VALUES (1227, 'The Google.', NULL, false, false, 'X2');
-INSERT INTO white_cards VALUES (1228, 'Pretty Pretty Princess Dress-Up Board Game®.', NULL, false, false, 'X2');
+INSERT INTO white_cards VALUES (1228, 'Pretty Pretty Princess Dress-Up Board GameÂ®.', NULL, false, false, 'X2');
 INSERT INTO white_cards VALUES (1229, 'The new Radiohead album.', NULL, false, false, 'X2');
 INSERT INTO white_cards VALUES (1230, 'An army of skeletons.', NULL, false, false, 'X2');
 INSERT INTO white_cards VALUES (1231, 'A man in yoga pants with a ponytail and feather earrings.', NULL, false, false, 'X2');
@@ -2224,12 +2016,12 @@ INSERT INTO white_cards VALUES (1028, 'Snotsicles.', NULL, false, false, 'CAN');
 INSERT INTO white_cards VALUES (1029, 'Schmirler the Curler.', NULL, false, false, 'CAN');
 INSERT INTO white_cards VALUES (1030, 'A Molson muscle.', NULL, false, false, 'CAN');
 INSERT INTO white_cards VALUES (1181, 'A bigger, blacker dick.', NULL, false, false, 'X2');
-INSERT INTO white_cards VALUES (1182, 'The mere concept of Applebee''s®.', NULL, false, false, 'X2');
+INSERT INTO white_cards VALUES (1182, 'The mere concept of Applebee''sÂ®.', NULL, false, false, 'X2');
 INSERT INTO white_cards VALUES (1183, 'A sad fat dragon with no friends.', NULL, false, false, 'X2');
 INSERT INTO white_cards VALUES (1184, 'Catastrophic urethral trauma.', NULL, false, false, 'X2');
 INSERT INTO white_cards VALUES (1185, 'Hillary Clinton''s death stare.', NULL, false, false, 'X2');
 INSERT INTO white_cards VALUES (1186, 'Existing.', NULL, false, false, 'X2');
-INSERT INTO white_cards VALUES (1187, 'A piñata full of scorpions.', NULL, false, false, 'X2');
+INSERT INTO white_cards VALUES (1187, 'A piÃ±ata full of scorpions.', NULL, false, false, 'X2');
 INSERT INTO white_cards VALUES (1188, 'Mooing.', NULL, false, false, 'X2');
 INSERT INTO white_cards VALUES (1189, 'Swiftly achieving orgasm.', NULL, false, false, 'X2');
 INSERT INTO white_cards VALUES (1190, 'Daddy''s belt.', NULL, false, false, 'X2');
@@ -2313,7 +2105,7 @@ INSERT INTO white_cards VALUES (4, 'Vigorous jazz hands.', NULL, true, true, NUL
 INSERT INTO white_cards VALUES (106, 'Skeletor.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (80, 'Vikings.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (34, 'Genital piercings.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (11, 'Viagra®.', NULL, true, true, NULL);
+INSERT INTO white_cards VALUES (11, 'ViagraÂ®.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (67, 'A really cool hat.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (102, 'An Oedipus complex.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (82, 'The Underground Railroad.', NULL, true, true, NULL);
@@ -2379,7 +2171,7 @@ INSERT INTO white_cards VALUES (1041, 'The Boy Scouts of America.', NULL, false,
 INSERT INTO white_cards VALUES (1042, 'Throwing a virgin into a volcano.', NULL, false, false, 'B');
 INSERT INTO white_cards VALUES (120, 'Cookie Monster devouring the Eucharist wafers.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (123, 'Letting yourself go.', NULL, true, false, NULL);
-INSERT INTO white_cards VALUES (130, 'Twinkies®.', NULL, true, false, NULL);
+INSERT INTO white_cards VALUES (130, 'TwinkiesÂ®.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (131, 'A LAN party.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (133, 'A grande sugar-free iced soy caramel macchiato.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (143, 'Will Smith.', NULL, true, false, NULL);
@@ -2390,7 +2182,7 @@ INSERT INTO white_cards VALUES (177, 'Garth Brooks.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (188, 'Keeping Christ in Christmas.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (190, 'That one gay Teletubby.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (216, 'Passive-agression.', NULL, true, false, NULL);
-INSERT INTO white_cards VALUES (247, 'A neglected Tamagotchi™.', NULL, true, false, NULL);
+INSERT INTO white_cards VALUES (247, 'A neglected Tamagotchiâ„¢.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (248, 'The People''s Elbow.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (230, 'Guys who don''t call.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (152, 'AIDS.', NULL, true, true, NULL);
@@ -2457,7 +2249,7 @@ INSERT INTO white_cards VALUES (208, 'Daddy issues.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (199, 'Britney Spears at 55.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (210, 'Natalie Portman.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (223, 'The Holy Bible.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (229, 'Hot Pockets®.', NULL, true, true, NULL);
+INSERT INTO white_cards VALUES (229, 'Hot PocketsÂ®.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (220, 'Pulling out.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (163, 'Pixelated bukkake.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (168, 'Waiting ''til marriage.', NULL, true, true, NULL);
@@ -2482,7 +2274,7 @@ INSERT INTO white_cards VALUES (162, 'Re-gifting.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (122, 'Penis envy.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (179, 'Drinking alone.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (215, 'Hulk Hogan.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (145, 'Five-Dollar Footlongs™.', NULL, true, true, NULL);
+INSERT INTO white_cards VALUES (145, 'Five-Dollar Footlongsâ„¢.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (140, 'Whipping it out.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (171, 'Dental dams.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (157, 'Gandhi.', NULL, true, true, NULL);
@@ -2498,7 +2290,7 @@ INSERT INTO white_cards VALUES (132, 'Opposable thumbs.', NULL, true, true, NULL
 INSERT INTO white_cards VALUES (222, 'The homosexual agenda.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (202, 'Fiery poops.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (203, 'Cards Against Humanity.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (192, 'Fancy Feast®.', NULL, true, true, NULL);
+INSERT INTO white_cards VALUES (192, 'Fancy FeastÂ®.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (238, 'Sean Connery.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (227, 'The milk man.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (115, 'The Chinese gymnastics team.', NULL, true, true, NULL);
@@ -2525,8 +2317,8 @@ INSERT INTO white_cards VALUES (333, 'Drum circles.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (338, 'Inappropriate yelling.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (341, 'The Thong Song.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (342, 'A vajazzled vagina.', NULL, true, false, NULL);
-INSERT INTO white_cards VALUES (350, 'Sobbing into a Hungry-Man® Frozen Dinner.', NULL, true, false, NULL);
-INSERT INTO white_cards VALUES (353, 'Ring Pops™.', NULL, true, false, NULL);
+INSERT INTO white_cards VALUES (350, 'Sobbing into a Hungry-ManÂ® Frozen Dinner.', NULL, true, false, NULL);
+INSERT INTO white_cards VALUES (353, 'Ring Popsâ„¢.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (363, 'Tiger Woods.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (371, 'PCP.', NULL, true, false, NULL);
 INSERT INTO white_cards VALUES (383, 'Mr. Snuffleupagus.', NULL, true, false, NULL);
@@ -2544,14 +2336,14 @@ INSERT INTO white_cards VALUES (366, 'Glenn Beck being harried by a swarm of buz
 INSERT INTO white_cards VALUES (254, 'A salty surprise.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (330, 'The Jews.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (324, 'Incest.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (284, 'The Übermensch.', NULL, true, true, NULL);
+INSERT INTO white_cards VALUES (284, 'The Ãœbermensch.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (391, 'Nazis.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (292, 'Repression.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (287, 'Attitude.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (361, 'Passable transvestites.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (395, 'Puberty.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (374, 'Swooping.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (311, 'Adderall™.', NULL, true, true, NULL);
+INSERT INTO white_cards VALUES (311, 'Adderallâ„¢.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (379, 'A look-see.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (348, 'Lactation.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (266, 'Pabst Blue Ribbon.', NULL, true, true, NULL);
@@ -2599,7 +2391,7 @@ INSERT INTO white_cards VALUES (349, 'Not reciprocating oral sex.', NULL, true, 
 INSERT INTO white_cards VALUES (352, 'Date rape.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (306, 'Italians.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (256, 'My soul.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (354, 'GoGurt®.', NULL, true, true, NULL);
+INSERT INTO white_cards VALUES (354, 'GoGurtÂ®.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (312, 'A stray pube.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (279, 'Jerking off into a pool of children''s tears.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (280, 'Getting really high.', NULL, true, true, NULL);
@@ -2660,7 +2452,7 @@ INSERT INTO white_cards VALUES (367, 'Surprise sex!', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (426, 'Dead babies.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (129, 'Masturbation.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (452, 'The Hustle.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (404, 'A Super Soaker™ full of cat pee.', NULL, true, true, NULL);
+INSERT INTO white_cards VALUES (404, 'A Super Soakerâ„¢ full of cat pee.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (409, 'Obesity.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (429, 'Child beauty pageants.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (422, 'Goats eating coins.', NULL, true, true, NULL);
@@ -2682,13 +2474,13 @@ INSERT INTO white_cards VALUES (411, 'Oompa-Loompas.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (451, 'Peeing a little bit.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (421, 'The miracle of childbirth.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (448, 'Another goddamn vampire movie.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (460, 'The Make-A-Wish® Foundation.', NULL, true, true, NULL);
+INSERT INTO white_cards VALUES (460, 'The Make-A-WishÂ® Foundation.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (455, 'Active listening.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (402, 'A gassy antelope.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (412, 'BATMAN!!!', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (413, 'Black people.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (447, 'Serfdom.', NULL, true, true, NULL);
-INSERT INTO white_cards VALUES (440, 'Lunchables™.', NULL, true, true, NULL);
+INSERT INTO white_cards VALUES (440, 'Lunchablesâ„¢.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (418, 'The Trail of Tears.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (453, 'Ghosts.', NULL, true, true, NULL);
 INSERT INTO white_cards VALUES (436, 'The Dance of the Sugar Plum Fairy.', NULL, true, true, NULL);
@@ -2880,144 +2672,36 @@ INSERT INTO white_cards VALUES (1452, 'Princess Molestia.', NULL, false, false, 
 INSERT INTO white_cards VALUES (1453, 'Princess Celestia.', NULL, false, false, 'MLP');
 INSERT INTO white_cards VALUES (1454, 'Princess Mi Amore Cadenza.', NULL, false, false, 'MLP');
 INSERT INTO white_cards VALUES (1455, 'Princess Luna.', NULL, false, false, 'MLP');
-INSERT INTO white_cards VALUES (1464, 'Santa''s heavy sack.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1465, 'Clearing a bloody path through Walmart with a scimitar.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1466, 'Another shitty year.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1467, 'Whatever Kwanzaa is supposed to be about.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1468, 'A Christmas stocking full of coleslaw.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1469, 'Elf cum.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1470, 'The tiny, calloused hands of the Chinese children that made this card.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1471, 'Taking down Santa with a surface-to-air missle.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1473, 'Socks. ', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1474, 'Pretending to be happy.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1475, 'Krampus, the Austrian Christmas monster.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1476, 'The Star Wars Holiday Special.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1477, 'My host cousin.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1478, 'Mall Santa.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1479, 'Several intertwining love stories featuring Hugh Grant.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1481, 'Gift-wrapping a live hamster.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1482, 'Space Jam on VHS.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1483, 'Immaculate conception.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1484, 'Fucking up "Silent Night" in front of 300 parents.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1485, 'A visually arresting turtleneck.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1486, 'A toxic family environment.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1487, 'Eating an entire snowman.', NULL, false, false, '❄');
-INSERT INTO white_cards VALUES (1480, 'A Hungry-Man™ Frozen Christmas Dinner for One.', NULL, false, false, '❄');
-
-
---
--- TOC entry 1917 (class 2606 OID 16611)
--- Dependencies: 161 161
--- Name: black_cards_pkey; Type: CONSTRAINT; Schema: public; Owner: cah; Tablespace: 
---
-
-ALTER TABLE ONLY black_cards
+INSERT INTO white_cards VALUES (1464, 'Santa''s heavy sack.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1465, 'Clearing a bloody path through Walmart with a scimitar.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1466, 'Another shitty year.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1467, 'Whatever Kwanzaa is supposed to be about.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1468, 'A Christmas stocking full of coleslaw.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1469, 'Elf cum.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1470, 'The tiny, calloused hands of the Chinese children that made this card.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1471, 'Taking down Santa with a surface-to-air missle.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1473, 'Socks. ', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1474, 'Pretending to be happy.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1475, 'Krampus, the Austrian Christmas monster.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1476, 'The Star Wars Holiday Special.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1477, 'My host cousin.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1478, 'Mall Santa.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1479, 'Several intertwining love stories featuring Hugh Grant.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1481, 'Gift-wrapping a live hamster.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1482, 'Space Jam on VHS.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1483, 'Immaculate conception.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1484, 'Fucking up "Silent Night" in front of 300 parents.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1485, 'A visually arresting turtleneck.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1486, 'A toxic family environment.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1487, 'Eating an entire snowman.', NULL, false, false, 'â„');
+INSERT INTO white_cards VALUES (1480, 'A Hungry-Manâ„¢ Frozen Christmas Dinner for One.', NULL, false, false, 'â„');
+ALTER TABLE black_cards
     ADD CONSTRAINT black_cards_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 1919 (class 2606 OID 16613)
--- Dependencies: 161 161
--- Name: black_cards_text_key; Type: CONSTRAINT; Schema: public; Owner: cah; Tablespace: 
---
-
-ALTER TABLE ONLY black_cards
-    ADD CONSTRAINT black_cards_text_key UNIQUE (text);
-
-
---
--- TOC entry 1923 (class 2606 OID 16615)
--- Dependencies: 164 164 164
--- Name: card_set_black_card_pkey; Type: CONSTRAINT; Schema: public; Owner: cah; Tablespace: 
---
-
-ALTER TABLE ONLY card_set_black_card
+ALTER TABLE card_set_black_card
     ADD CONSTRAINT card_set_black_card_pkey PRIMARY KEY (card_set_id, black_card_id);
-
-
---
--- TOC entry 1921 (class 2606 OID 16617)
--- Dependencies: 163 163
--- Name: card_set_pkey; Type: CONSTRAINT; Schema: public; Owner: cah; Tablespace: 
---
-
-ALTER TABLE ONLY card_set
+ALTER TABLE card_set
     ADD CONSTRAINT card_set_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 1925 (class 2606 OID 16619)
--- Dependencies: 165 165 165
--- Name: card_set_white_card_pkey; Type: CONSTRAINT; Schema: public; Owner: cah; Tablespace: 
---
-
-ALTER TABLE ONLY card_set_white_card
+ALTER TABLE card_set_white_card
     ADD CONSTRAINT card_set_white_card_pkey PRIMARY KEY (card_set_id, white_card_id);
-
-
---
--- TOC entry 1927 (class 2606 OID 16623)
--- Dependencies: 170 170
--- Name: white_cards_pkey; Type: CONSTRAINT; Schema: public; Owner: cah; Tablespace: 
---
-
-ALTER TABLE ONLY white_cards
+ALTER TABLE white_cards
     ADD CONSTRAINT white_cards_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 1929 (class 2606 OID 16625)
--- Dependencies: 170 170
--- Name: white_cards_text_key; Type: CONSTRAINT; Schema: public; Owner: cah; Tablespace: 
---
-
-ALTER TABLE ONLY white_cards
-    ADD CONSTRAINT white_cards_text_key UNIQUE (text);
-
-
---
--- TOC entry 1930 (class 2606 OID 16636)
--- Dependencies: 161 1916 164
--- Name: fk513da45c997611f9; Type: FK CONSTRAINT; Schema: public; Owner: cah
---
-
-ALTER TABLE ONLY card_set_black_card
-    ADD CONSTRAINT fk513da45c997611f9 FOREIGN KEY (black_card_id) REFERENCES black_cards(id);
-
-
---
--- TOC entry 1931 (class 2606 OID 16641)
--- Dependencies: 164 163 1920
--- Name: fk513da45cb2505f39; Type: FK CONSTRAINT; Schema: public; Owner: cah
---
-
-ALTER TABLE ONLY card_set_black_card
-    ADD CONSTRAINT fk513da45cb2505f39 FOREIGN KEY (card_set_id) REFERENCES card_set(id);
-
-
---
--- TOC entry 1932 (class 2606 OID 16656)
--- Dependencies: 163 1920 165
--- Name: fkc2487272b2505f39; Type: FK CONSTRAINT; Schema: public; Owner: cah
---
-
-ALTER TABLE ONLY card_set_white_card
-    ADD CONSTRAINT fkc2487272b2505f39 FOREIGN KEY (card_set_id) REFERENCES card_set(id);
-
-
---
--- TOC entry 1933 (class 2606 OID 16661)
--- Dependencies: 165 170 1926
--- Name: fkc2487272bfd29b4d; Type: FK CONSTRAINT; Schema: public; Owner: cah
---
-
-ALTER TABLE ONLY card_set_white_card
-    ADD CONSTRAINT fkc2487272bfd29b4d FOREIGN KEY (white_card_id) REFERENCES white_cards(id);
-
-
--- Completed on 2012-12-07 18:41:51
-
---
--- PostgreSQL database dump complete
---
-

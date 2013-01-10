@@ -89,24 +89,28 @@ HttpSession hSession = request.getSession(true);
   </h1>
   <h3>A <a href="http://cardsagainsthumanity.com/">Cards Against Humanity</a> clone.</h3>
   <p>
-    This webapp is a modified version of ajanata's PYZ, and is still in development. There will be bugs, but hopefully they won't affect gameplay
+    This webapp is a modified version of ajanata's PYX, and is still in development. There will be bugs, but hopefully they won't affect gameplay
     very much. To assist with development, <strong>all traffic on this server is logged.</strong>
   </p>
   <p>
-    Read the official CAH Rules <a href="CAH_Rules.pdf">here</a> (PDF)
-    <br/>
-    <br/>
-    If this is your first time playing, you may wish to read <a href="info.jsp">the changelog and list of
+    If this is your first time playing, you may wish to read <a href="/">the changelog and list of
     known issues.</a>
   </p>
-  <p>Most recent update: 12 October, 5:00 AM UTC:</p>
+  <p>Most recent update: 9 January 2013:</p>
   <ul>
-    <li>User Preferences. Click the button in the top-right corner and you can hide the connect
-    and quit events, and ignore chat from specific users. These settings are remembered for the
-    next time you play the game. The game also remembers what name you used last time you
-    played.</li>
-    <li>Games without a password will sort before games that do, so you can find them easier.</li>
-    <li>Under-the-hood improvements.</li>
+    <li>New stylesheet from timsookram.</li>
+    <li>New card sets. The Holiday Pack was added about a month ago, the MLP pack got lost in the
+    server migration and has been restored, and another custom card set has been added from the fine
+    folks over at Very Serious. This card set has a decent amount of in-jokes, though, so you may
+    want to skip it for now. I'll pull out the universally funny cards later into another set.
+      <ul><li>I haven't forgotten about the other card sets that have been sent in. I'll get to
+      those later this week. I did this card set first since it was sent to me in a format that I
+      could import directly into the database.</li></ul>
+    </li>
+    <li>Plugged a hole that would let any especially crafty user pretend to be an administrator.
+    This was done entirely at the firewall and web server level and required no code change to the
+    game itself.</li>
+    <li>Increased maximum game limit from 60 to 75.</li>
   </ul>
   <div id="nickbox">
     Nickname: <input type="text" id="nickname" value="" maxlength="30" />
@@ -119,7 +123,7 @@ HttpSession hSession = request.getSession(true);
     or download and print it out yourself. It is distributed under a
     <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons - Attribution -
     Noncommercial - Share Alike license</a>. This web version is in no way endorsed or sponsored by
-    cardsagainsthumanity.com. You may download the <em>original</em> source code to this version from
+    cardsagainsthumanity.com. You may download the source code to this version from
     <a href="https://github.com/ajanata/PretendYoureXyzzy">GitHub</a>. For full license
     information, including information about included libraries, see the
     <a href="license.html">full license information</a>.

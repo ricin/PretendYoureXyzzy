@@ -44,9 +44,8 @@ to, for instance, display the number of connected players.
 </h1>
 <h3>A Cards Against Humanity clone.</h3>
 <p>
-  This webapp is a modified version of ajanata's PYZ, and is still in development. There will be bugs, but hopefully they won't affect gameplay
-  very much. To assist with development, <strong>all traffic on this server <em>may</em> be
-  logged.</strong>
+  This webapp is a modified version of ajanata's PYX, and is still in development. There will be bugs, but hopefully they won't affect gameplay
+  very much. To assist with development, <strong>all traffic on this server is logged.</strong>
 </p>
 <p>
   The name you enter and your computer's IP address will <strong>always</strong> be logged when you
@@ -54,8 +53,20 @@ to, for instance, display the number of connected players.
 </p>
 <p>Recent Changes:</p>
 <ul>
-  <li>Early September, 2012:<ul>
-    <li>The Second Expansion has been entered.</li>
+  <li>Most recent update: 9 January 2013:<ul>
+    <li>New stylesheet from timsookram.</li>
+    <li>New card sets. The Holiday Pack was added about a month ago, the MLP pack got lost in the
+    server migration and has been restored, and another custom card set has been added from the fine
+    folks over at Very Serious. This card set has a decent amount of in-jokes, though, so you may
+    want to skip it for now. I'll pull out the universally funny cards later into another set.
+      <ul><li>I haven't forgotten about the other card sets that have been sent in. I'll get to
+      those later this week. I did this card set first since it was sent to me in a format that I
+      could import directly into the database.</li></ul>
+    </li>
+    <li>Plugged a hole that would let any especially crafty user pretend to be an administrator.
+    This was done entirely at the firewall and web server level and required no code change to the
+    game itself.</li>
+    <li>Increased maximum game limit from 60 to 75.</li>
   </ul></li>
   <li>12 October, 5:00 AM UTC:<ul>
     <li>User Preferences. Click the button in the top-right corner and you can hide the connect
@@ -64,6 +75,9 @@ to, for instance, display the number of connected players.
     played.</li>
     <li>Games without a password will sort before games that do, so you can find them easier.</li>
     <li>Under-the-hood improvements.</li>
+  </ul></li>
+  <li>Early September, 2012:<ul>
+    <li>The Second Expansion has been entered.</li>
   </ul></li>
   <li>29 August, 6:00 AM UTC:<ul>
     <li>Chat flood protection. You may only chat 5 times in any given 15 second period.</li>
@@ -199,7 +213,7 @@ to, for instance, display the number of connected players.
   or download and print it out yourself. It is distributed under a
   <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons - Attribution -
   Noncommercial - Share Alike license</a>. This web version is in no way endorsed or sponsored by
-  cardsagainsthumanity.com. You may download the <em>original</em> source code to this version from
+  cardsagainsthumanity.com. You may download the source code to this version from
   <a href="https://github.com/ajanata/PretendYoureXyzzy">GitHub</a>. For full license
   information, including information about included libraries, see the
   <a href="license.html">full license information</a>.

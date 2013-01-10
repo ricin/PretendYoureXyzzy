@@ -89,6 +89,9 @@ HttpSession hSession = request.getSession(true);
   </h1>
   <h3>A <a href="http://cardsagainsthumanity.com/">Cards Against Humanity</a> clone.</h3>
   <p>
+   Read the Cards Against Humanity rules <a href="CAH_Rules.pdf">here</a>
+  </p>
+  <p>
     This webapp is a modified version of ajanata's PYX, and is still in development. There will be bugs, but hopefully they won't affect gameplay
     very much. To assist with development, <strong>all traffic on this server is logged.</strong>
   </p>

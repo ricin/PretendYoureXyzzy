@@ -87,7 +87,11 @@ cah.ajax.after_registered = function() {
 };
 
 cah.ajax.SuccessHandlers[cah.$.AjaxOperation.CHAT] = function(data) {
-  // pass
+	  // pass
+};
+   
+cah.ajax.SuccessHandlers[cah.$.AjaxOperation.ACTION] = function(data) {
+	  // pass
 };
 
 cah.ajax.SuccessHandlers[cah.$.AjaxOperation.LOG_OUT] = function(data) {

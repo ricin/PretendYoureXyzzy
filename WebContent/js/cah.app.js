@@ -119,10 +119,15 @@ function chatsubmit_click() {
   switch (cmd) {
     // TODO support an /ignore command
     case '':
-      // TODO when I get multiple channels working, this needs to know active and pass it
-      cah.Ajax.build(cah.$.AjaxOperation.CHAT).withMessage(text).run();
-      cah.log.status("<" + cah.nickname + "> " + text);
-      break;
+        // TODO when I get multiple channels working, this needs to know active and pass it
+        cah.Ajax.build(cah.$.AjaxOperation.CHAT).withMessage(text).run();
+        cah.log.status("<" + cah.nickname + "> " + text);
+        break;
+    case 'me':
+        // TODO when I get multiple channels working, this needs to know active and pass it
+        cah.Ajax.build(cah.$.AjaxOperation.ACTION).withMessage(text).run();
+        cah.log.status("* " + cah.nickname + "  " + text);
+        break;
     case 'kick':
       cah.Ajax.build(cah.$.AjaxOperation.KICK).withNickname(text.split(' ')[0]).run();
       break;

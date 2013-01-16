@@ -103,6 +103,22 @@ cah.longpoll.EventHandlers[cah.$.LongPollEvent.CHAT] = function(data) {
   }
 };
 
+cah.longpoll.EventHandlers[cah.$.LongPollEvent.ACTION] = function(data) {
+  // TODO deal with multiple channels eventually
+  var clazz = undefined;
+  var from = data[cah.$.LongPollResponse.FROM];
+  var show = !cah.ignoreList[from];
+  if (data[cah.$.LongPollResponse.FROM_ADMIN]) {
+    clazz = "admin";
+    show = true;
+  }
+  // don't display our own chat
+  if (from != cah.nickname && show) {
+    cah.log.status("* " + data[cah.$.LongPollResponse.FROM] + "  "
+        + data[cah.$.LongPollResponse.MESSAGE], clazz);
+  }
+};
+
 cah.longpoll.EventHandlers[cah.$.LongPollEvent.GAME_LIST_REFRESH] = function(data) {
   cah.GameList.instance.update();
 };

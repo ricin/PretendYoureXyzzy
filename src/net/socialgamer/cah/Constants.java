@@ -164,6 +164,7 @@ public class Constants {
     BAN("b"),
     CHANGE_GAME_OPTIONS("cgo"),
     CHAT("c"),
+    ACTION("a"),
     CREATE_GAME("cg"),
     FIRST_LOAD("fl"),
     GAME_LIST("ggl"),
@@ -359,6 +360,7 @@ public class Constants {
     BANNED(DisconnectReason.BANNED),
     @DuplicationAllowed
     CHAT(AjaxOperation.CHAT),
+    ACTION(AjaxOperation.ACTION),
     GAME_BLACK_RESHUFFLE("gbr"),
     GAME_JUDGE_LEFT("gjl"),
     GAME_JUDGE_SKIPPED("gjs"),

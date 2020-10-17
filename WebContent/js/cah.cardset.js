@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Andy Janata
+ * Copyright (c) 2012-2018, Andy Janata
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted
@@ -34,6 +34,12 @@ cah.CardSet = {};
 cah.CardSet.list = {};
 
 /**
+ * @type {Object} Key-value map of CardSets. Key is sort weight, value is the same object as the
+ *       by-id map object.
+ */
+cah.CardSet.byWeight = {};
+
+/**
  * Class containing information about a CardSet. Should only be used by utility function in this
  * file that populates cah.CardSet.list during initial load of the game.
  * 
@@ -41,6 +47,8 @@ cah.CardSet.list = {};
  *          id CardSet's database/wire ID.
  * @param {String}
  *          name CardSet's name.
+ * @param {String}
+ *          description CardSet's description.
  * @param {Boolean}
  *          baseDeck Whether this CardSet can be used as a base deck. At least one base deck must be
  *          used per game.
@@ -48,10 +56,12 @@ cah.CardSet.list = {};
  *          blackCardCount The number of black cards in this CardSet
  * @param {Number}
  *          whiteCardCount The number of white cards in this CardSet.
+ * @param {Number}
+ *          weight The sort weight of this CardSet.
  * @constructor
  * @private
  */
-cah.CardSet = function(id, name, baseDeck, blackCardCount, whiteCardCount) {
+cah.CardSet = function(id, name, description, baseDeck, blackCardCount, whiteCardCount, weight) {
   /**
    * CardSet's database/wire ID.
    * 
@@ -67,6 +77,14 @@ cah.CardSet = function(id, name, baseDeck, blackCardCount, whiteCardCount) {
    * @private
    */
   this.name_ = name;
+
+  /**
+   * CardSet's description.
+   * 
+   * @type {String}
+   * @private
+   */
+  this.description_ = description;
 
   /**
    * Whether this CardSet can be used as a base deck. At least one base deck must be used per game.
@@ -91,6 +109,14 @@ cah.CardSet = function(id, name, baseDeck, blackCardCount, whiteCardCount) {
    * @private
    */
   this.whiteCardCount_ = whiteCardCount;
+
+  /**
+   * The sort weight of this CardSet.
+   * 
+   * @type {Number}
+   * @private
+   */
+  this.weight_ = weight;
 };
 
 /**
@@ -105,6 +131,13 @@ cah.CardSet.prototype.getId = function() {
  */
 cah.CardSet.prototype.getName = function() {
   return this.name_;
+};
+
+/**
+ * @returns {String} This CardSet's description.
+ */
+cah.CardSet.prototype.getDescription = function() {
+  return this.description_;
 };
 
 /**
@@ -129,6 +162,13 @@ cah.CardSet.prototype.getWhiteCardCount = function() {
 };
 
 /**
+ * @returns {Number} The sort weight of this CardSet.
+ */
+cah.CardSet.prototype.getWeight = function() {
+  return this.weight_;
+};
+
+/**
  * Populate the internal list of CardSets from data provided by the server.
  * 
  * @param {Array}
@@ -136,12 +176,21 @@ cah.CardSet.prototype.getWhiteCardCount = function() {
  */
 cah.CardSet.populateCardSets = function(cardSets) {
   cah.CardSet.list = {};
+  cah.CardSet.byWeight = {};
+  // the server already sends us an ordered list, so let's just use that ordering
+  var i = 0;
   for ( var key in cardSets) {
     var cardSetData = cardSets[key];
     var cardSet = new cah.CardSet(cardSetData[cah.$.CardSetData.ID],
-        cardSetData[cah.$.CardSetData.CARD_SET_NAME], cardSetData[cah.$.CardSetData.BASE_DECK],
+        cardSetData[cah.$.CardSetData.CARD_SET_NAME],
+        cardSetData[cah.$.CardSetData.CARD_SET_DESCRIPTION],
+        cardSetData[cah.$.CardSetData.BASE_DECK],
         cardSetData[cah.$.CardSetData.BLACK_CARDS_IN_DECK],
-        cardSetData[cah.$.CardSetData.WHITE_CARDS_IN_DECK]);
+        cardSetData[cah.$.CardSetData.WHITE_CARDS_IN_DECK], cardSetData[cah.$.CardSetData.WEIGHT]);
     cah.CardSet.list[cardSet.getId()] = cardSet;
+    cah.CardSet.byWeight[i++] = cardSet;
   }
+
+  // not sure if there's a better way to call this...
+  cah.Preferences.updateCardSetFilters();
 };

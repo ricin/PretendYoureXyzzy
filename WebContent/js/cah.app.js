@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Andy Janata
+ * Copyright (c) 2012-2018, Andy Janata
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted
@@ -30,6 +30,9 @@
  */
 
 $(document).ready(function() {
+  // Initialize the logger (i.e. the global chat tab) before anything needs it.
+  cah.log.init();
+
   // see if we already exist on the server so we can resume
   cah.Ajax.build(cah.$.AjaxOperation.FIRST_LOAD).run();
 
@@ -37,18 +40,23 @@ $(document).ready(function() {
     $("#nickname").val($.cookie("nickname"));
   }
   $("#nicknameconfirm").click(nicknameconfirm_click);
-  $("#nickbox").keyup(nickbox_keyup);
-  $("#nickbox").focus();
+  $("#nickname").keyup(nickname_keyup);
+  $("#nickname").focus();
+  if (document.location.protocol == "https:" || cah.INSECURE_ID_ALLOWED) {
+    $("#idcode").prop("disabled", false);
+    // re-use existing handler
+    $("#idcode").keyup(nickname_keyup);
+  }
 
-  $("#chat").keyup(chat_keyup);
-  $("#chat_submit").click(chatsubmit_click);
+  $(".chat", $("#tab-global")).keyup(chat_keyup($(".chat_submit", $("#tab-global"))));
+  $(".chat_submit", $("#tab-global")).click(chatsubmit_click(null, $("#tab-global")));
 
   // TODO: have some sort of mechanism to alert the server that we have unloaded the page, but
   // have not expressed an interest in being cleared out yet.
   // $(window).bind("beforeunload", window_beforeunload);
   $("#logout").click(logout_click);
 
-  load_preferences();
+  cah.Preferences.load();
 
   $("#tabs").tabs();
   $("#button-global").click();
@@ -62,13 +70,24 @@ $(document).ready(function() {
   app_resize();
 });
 
+$(window).focus(function() {
+  cah.windowActive = true;
+  if (cah.missedGameListRefresh) {
+    cah.GameList.instance.update();
+  }
+});
+
+$(window).blur(function() {
+  cah.windowActive = false;
+});
+
 /**
  * Handle a key up event in the nick box. If the key was enter, try to register with the server.
  * 
  * @param {jQuery.Event}
  *          e
  */
-function nickbox_keyup(e) {
+function nickname_keyup(e) {
   if (e.which == 13) {
     $("#nicknameconfirm").click();
     e.preventDefault();
@@ -80,69 +99,161 @@ function nickbox_keyup(e) {
  */
 function nicknameconfirm_click() {
   var nickname = $.trim($("#nickname").val());
-  $.cookie("nickname", nickname, {
-    expires : 365
-  });
-  cah.Ajax.build(cah.$.AjaxOperation.REGISTER).withNickname(nickname).run();
+  cah.setCookie("nickname", nickname);
+  var builder = cah.Ajax.build(cah.$.AjaxOperation.REGISTER).withNickname(nickname);
+  var idCode = $.trim($("#idcode").val());
+  if (idCode) {
+    builder.withIdCode(idCode);
+  }
+  if (!cah.noPersistentId && cah.persistentId) {
+    builder.withPersistentId(cah.persistentId);
+  }
+  builder.run();
 }
 
 /**
  * Handle a key up event in the chat box. If the key was enter, send the message to the server.
  * 
- * @param {jQuery.Event}
- *          e
+ * @param {jQuery.HTMLButtonElement}
+ *          submitButton Submit button for the chat box.
  */
-function chat_keyup(e) {
-  if (e.which == 13) {
-    $("#chat_submit").click();
-    e.preventDefault();
-  }
+function chat_keyup(submitButton) {
+  return function(e) {
+    if (e.which == 13) {
+      $(submitButton).click();
+      e.preventDefault();
+    }
+  };
 }
 
 /**
- * Handle a click even on the chat button. Send the message to the server.
+ * Generate a click handler for the chat submit button. This parses the line for any /-commands,
+ * then sends the request to the server.
+ * 
+ * @param {number}
+ *          game_id Game ID to use in AJAX requests, or null for global chat
+ * @param {jQuery.HTMLDivElement}
+ *          parent_element Parent element, which contains one text-input-box element of class
+ *          "chat", which will be used to source the data.
  */
-function chatsubmit_click() {
-  var text = $.trim($("#chat").val());
-  if (text == "") {
-    return;
-  }
-  var cmd = '';
-  if ('/' == text.substring(0, 1)) {
-    cmd = text.substring(1, text.indexOf(' ') >= 0 ? text.indexOf(' ') : undefined);
-    if (text.indexOf(' ') >= 0) {
-      text = text.substring(text.indexOf(' ') + 1);
-    } else {
-      text = '';
-    }
-  }
-  switch (cmd) {
-    // TODO support an /ignore command
-    case '':
-        // TODO when I get multiple channels working, this needs to know active and pass it
-        cah.Ajax.build(cah.$.AjaxOperation.CHAT).withMessage(text).run();
-        cah.log.status("<" + cah.nickname + "> " + text);
-        break;
-    case 'me':
-        // TODO when I get multiple channels working, this needs to know active and pass it
-        cah.Ajax.build(cah.$.AjaxOperation.ACTION).withMessage(text).run();
-        cah.log.status("* " + cah.nickname + "  " + text);
-        break;
-    case 'kick':
-      cah.Ajax.build(cah.$.AjaxOperation.KICK).withNickname(text.split(' ')[0]).run();
-      break;
-    case 'ban':
-      // this could also be an IP address
-      cah.Ajax.build(cah.$.AjaxOperation.BAN).withNickname(text.split(' ')[0]).run();
-      break;
-    case 'names':
-      cah.Ajax.build(cah.$.AjaxOperation.NAMES).run();
-      break;
-    default:
-  }
+function chatsubmit_click(game_id, parent_element) {
+  return function() {
+    var ajax = null;
 
-  $("#chat").val("");
-  $("#chat").focus();
+    var text = $.trim($(".chat", parent_element).val());
+    if (text == "") {
+      return;
+    }
+    var cmd = '';
+    if ('/' == text.substring(0, 1)) {
+      cmd = text.substring(1, text.indexOf(' ') >= 0 ? text.indexOf(' ') : undefined);
+      if (text.indexOf(' ') >= 0) {
+        text = text.substring(text.indexOf(' ') + 1);
+      } else {
+        text = '';
+      }
+    }
+    switch (cmd) {
+      // TODO support an /ignore command
+      case '':
+        if (game_id !== null) {
+          ajax = cah.Ajax.build(cah.$.AjaxOperation.GAME_CHAT).withGameId(game_id);
+        } else {
+          ajax = cah.Ajax.build(cah.$.AjaxOperation.CHAT);
+        }
+        ajax = ajax.withEmote(false).withMessage(text);
+        var clazz = '';
+        if (cah.sigil == cah.$.Sigil.ADMIN) {
+          clazz = 'admin';
+        }
+        cah.log.status_with_game(game_id, "<" + cah.sigil + cah.nickname + "> " + text, clazz,
+            false, cah.log.getTitleForIdCode(cah.idcode));
+        break;
+      case 'me':
+        if (game_id !== null) {
+          ajax = cah.Ajax.build(cah.$.AjaxOperation.GAME_CHAT).withGameId(game_id);
+        } else {
+          ajax = cah.Ajax.build(cah.$.AjaxOperation.CHAT);
+        }
+        ajax = ajax.withEmote(true).withMessage(text);
+        var clazz = '';
+        if (cah.sigil == cah.$.Sigil.ADMIN) {
+          clazz = 'admin';
+        }
+        cah.log.status_with_game(game_id, "* " + cah.sigil + cah.nickname + " " + text, clazz,
+            false, cah.log.getTitleForIdCode(cah.idcode));
+        break;
+      case 'wall':
+        ajax = cah.Ajax.build(cah.$.AjaxOperation.CHAT).withWall(true).withMessage(text);
+        break;
+      case 'kick':
+        ajax = cah.Ajax.build(cah.$.AjaxOperation.KICK).withNickname(text.split(' ')[0]);
+        break;
+      case 'ban':
+        // this could also be an IP address
+        ajax = cah.Ajax.build(cah.$.AjaxOperation.BAN).withNickname(text.split(' ')[0]);
+        break;
+      case 'sync':
+        if (game_id !== null) {
+          var game = cah.currentGames[game_id];
+          if (game) {
+            game.removeAllCards();
+          }
+          ajax = cah.Ajax.build(cah.$.AjaxOperation.GET_CARDS).withGameId(game_id);
+        } else {
+          cah.log.error("This command only works in a game.");
+        }
+        break;
+      case 'score':
+        ajax = cah.Ajax.build(cah.$.AjaxOperation.SCORE).withMessage(text);
+        if (game_id != null) {
+          ajax = ajax.withGameId(game_id);
+        }
+        break;
+      case 'names':
+        ajax = cah.Ajax.build(cah.$.AjaxOperation.NAMES);
+        break;
+      case 'addcardcast':
+        if (game_id !== null) {
+          ajax = cah.Ajax.build(cah.$.AjaxOperation.CARDCAST_ADD_CARDSET).withCardcastId(
+              text.split(' ')[0]).withGameId(game_id);
+        } else {
+          cah.log.error("This command only works in a game.");
+        }
+        break;
+      case 'removecardcast':
+        if (game_id !== null) {
+          ajax = cah.Ajax.build(cah.$.AjaxOperation.CARDCAST_REMOVE_CARDSET).withCardcastId(
+              text.split(' ')[0]).withGameId(game_id);
+        } else {
+          cah.log.error("This command only works in a game.");
+        }
+        break;
+      case 'listcardcast':
+        if (game_id !== null) {
+          ajax = cah.Ajax.build(cah.$.AjaxOperation.CARDCAST_LIST_CARDSETS).withGameId(game_id);
+        } else {
+          cah.log.error("This command only works in a game.");
+        }
+        break;
+      case 'whois':
+        ajax = cah.Ajax.build(cah.$.AjaxOperation.WHOIS).withNickname(text.split(' ')[0]);
+        // so we can show it in the right place; the server ignores this
+        if (game_id !== null) {
+          ajax = ajax.withGameId(game_id);
+        }
+        break;
+      default:
+        cah.log.error("Invalid command.");
+    }
+
+    if (ajax) {
+      ajax.run();
+    }
+
+    $(".chat", parent_element).val("");
+    $(".chat", parent_element).focus();
+  };
 }
 
 /**
@@ -151,6 +262,7 @@ function chatsubmit_click() {
 function logout_click() {
   if (confirm("Are you sure you wish to log out?")) {
     cah.Ajax.build(cah.$.AjaxOperation.LOG_OUT).run();
+    cah.updateHash('');
   }
 }
 
@@ -170,64 +282,165 @@ function preferences_click() {
 }
 
 function load_preferences() {
-  if ($.cookie("hide_connect_quit")) {
-    $("#hide_connect_quit").attr('checked', 'checked');
-  } else {
-    $("#hide_connect_quit").removeAttr('checked');
-  }
-
-  if ($.cookie("ignore_list")) {
-    $("#ignore_list").val($.cookie("ignore_list"));
-  } else {
-    $("#ignore_list").val("");
-  }
-
-  apply_preferences();
+  // FIXME remove these after making sure everything calls the new way.
+  debugger;
+  cah.Preferences.load();
 }
 
 function save_preferences() {
-  if ($("#hide_connect_quit").attr("checked")) {
-    $.cookie("hide_connect_quit", true, {
-      expires : 365
-    });
-  } else {
-    $.removeCookie("hide_connect_quit");
-  }
-
-  $.cookie("ignore_list", $("#ignore_list").val(), {
-    expires : 365
-  });
-
-  apply_preferences();
+  // FIXME remove these after making sure everything calls the new way.
+  debugger;
+  cah.Preferences.save();
 }
 
 function apply_preferences() {
-  cah.hideConnectQuit = !!$("#hide_connect_quit").attr("checked");
-
-  cah.ignoreList = {};
-  $($('#ignore_list').val().split('\n')).each(function() {
-    cah.ignoreList[this] = true;
-  });
+  // FIXME remove these after making sure everything calls the new way.
+  debugger;
+  cah.Preferences.apply();
 }
+
+/**
+ * Add selected items from sourceList to destList, ignoring duplicates.
+ */
+cah.transferItems = function(sourceListId, destListId, idPrefix) {
+  cah.transferItems(sourceListId, destListId, idPrefix, function(a, b) {
+    return Number(a.value) - Number(b.value);
+  });
+};
+
+cah.transferItems = function(sourceListId, destListId, idPrefix, sortFunc) {
+  $('#' + sourceListId + ' option').filter(':selected').each(function() {
+    var existing = $('#' + idPrefix + '_' + this.value);
+    if (existing.length == 0) {
+      cah.addItem(destListId, this.value, this.text, idPrefix);
+    }
+  });
+  $('#' + destListId + ' option').sort(sortFunc).appendTo('#' + destListId);
+
+  cah.removeItems(sourceListId);
+};
+
+/**
+ * Add an item to a list.
+ * 
+ * @param listId
+ *          {String} Id of the select element.
+ * @param value
+ *          {String} Value attribute of the item to insert into the list.
+ * @param text
+ *          {String} The display text to insert into the list.
+ * @param idPrefix
+ *          {String} The prefix for the id of the item to insert into the list.
+ */
+cah.addItem = function(listId, value, text, idPrefix) {
+  $('#' + listId).append(
+      '<option value="' + value + '" id="' + idPrefix + '_' + value + '">' + text + '</option>');
+};
+
+/**
+ * Remove selected items from list.
+ * 
+ * @param listId
+ *          {String} Id of the list from which to remove selected items.
+ */
+cah.removeItems = function(listId) {
+  $('#' + listId + ' option').filter(':selected').each(function() {
+    this.parentElement.removeChild(this);
+  });
+};
+
+/**
+ * Set a cookie.
+ * 
+ * @param {String}
+ *          name The name of the cookie.
+ * @param {Any}
+ *          value The value of the cookie.
+ */
+cah.setCookie = function(name, value) {
+  return $.cookie(name, value, {
+    domain : cah.COOKIE_DOMAIN,
+    expires : 365
+  });
+};
+
+/**
+ * Remove a cookie.
+ * 
+ * @param {String}
+ *          name The name of the cookie.
+ */
+cah.removeCookie = function(name) {
+  $.removeCookie(name, {
+    domain : cah.COOKIE_DOMAIN
+  });
+};
+
+/**
+ * Get a cookie.
+ * 
+ * @param {String}
+ *          name The name of the cookie.
+ * @returns The value of the cookie, or {@code undefined} if the cookie is not set.
+ */
+cah.getCookie = function(name) {
+  return $.cookie(name);
+};
 
 /**
  * Handle a window resize event. Resize the chat and info areas to fit vertically and horizontally.
  * This was tested extensively in Chrome. It may not be pixel-perfect in other browsers.
  */
 function app_resize() {
+  var chat = $(".chat", $("#tab-global"));
+  var log = cah.log.log;
+
   var chatWidth = $("#canvas").width() - 257;
   $("#tabs").width(chatWidth + 'px');
-  $("#log").width((chatWidth + 2) + 'px');
-  $("#chat").width((chatWidth - 42) + 'px');
   var bottomHeight = $(window).height() - $("#main").height() - $("#menubar").height() - 29;
   $("#bottom").height(bottomHeight);
   $("#info_area").height(bottomHeight);
   $("#tabs").height(bottomHeight);
-  $("#log").height(bottomHeight - $("#chat").height() - 40);
+  $("#tab-preferences").height(bottomHeight - 45);
+  $("#tab-gamelist-filters").height(bottomHeight - 45);
+
+  // global chat
+  do_app_resize(chat, log);
+  // per-game chats
+  for ( var id in cah.currentGames) {
+    chat = $(".chat", $("#tab-chat-game_" + id));
+    log = $(".log", $("#tab-chat-game_" + id));
+    do_app_resize(chat, log);
+  }
+
   // this is ugly and terrible.
   if ($(window).height() < 650) {
     $("body").css("overflow-y", "auto");
   } else {
     $("body").css("overflow-y", "hidden");
+  }
+}
+
+function do_app_resize(chatElement, logElement) {
+  var chatWidth = $("#canvas").width() - 257;
+  logElement.width((chatWidth + 2) + 'px');
+  chatElement.width((chatWidth - 42) + 'px');
+  var bottomHeight = $(window).height() - $("#main").height() - $("#menubar").height() - 29;
+  logElement.height(bottomHeight - chatElement.height() - 40);
+}
+
+cah.logUserPermalinks = function(data) {
+  var linkMsg = "";
+  if (cah.$.AjaxResponse.SESSION_PERMALINK in data) {
+    linkMsg += "<a href='" + data[cah.$.AjaxResponse.SESSION_PERMALINK]
+        + "'rel='noopener' target='_blank'>Permanent link to games you play this session.</a> ";
+  }
+  if (cah.$.AjaxResponse.USER_PERMALINK in data && !cah.noPersistentId) {
+    linkMsg += "<a href='"
+        + data[cah.$.AjaxResponse.USER_PERMALINK]
+        + "'rel='noopener' target='_blank'>Permanent link to every time you've played on this device.</a> ";
+  }
+  if ("" != linkMsg) {
+    cah.log.status(linkMsg, undefined, true);
   }
 }

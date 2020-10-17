@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <%--
-Copyright (c) 2012, Andy Janata
+Copyright (c) 2012-2020, Andy Janata
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted
@@ -28,11 +28,23 @@ created for the user now.
 @author Andy Janata (ajanata@socialgamer.net)
 --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="com.google.inject.Injector" %>
+<%@ page import="com.google.inject.Key" %>
+<%@ page import="com.google.inject.TypeLiteral" %>
 <%@ page import="javax.servlet.http.HttpSession" %>
+<%@ page import="net.socialgamer.cah.RequestWrapper" %>
+<%@ page import="net.socialgamer.cah.StartupUtils" %>
+<%@ page import="net.socialgamer.cah.data.GameOptions" %>
+<%@ page import="net.socialgamer.cah.CahModule" %>
+<%@ page import="net.socialgamer.cah.CahModule.*" %>
 <%
 // Ensure a session exists for the user.
 @SuppressWarnings("unused")
 HttpSession hSession = request.getSession(true);
+RequestWrapper wrapper = new RequestWrapper(request);
+ServletContext servletContext = pageContext.getServletContext();
+Injector injector = (Injector) servletContext.getAttribute(StartupUtils.INJECTOR);
+boolean allowBlankCards = injector.getInstance(Key.get(new TypeLiteral<Boolean>(){}, AllowBlankCards.class));
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -40,10 +52,12 @@ HttpSession hSession = request.getSession(true);
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>Pretend You're Xyzzy</title>
-<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="js/jquery-migrate-1.2.1.js"></script>
 <script type="text/javascript" src="js/jquery.cookie.js"></script>
+<script type="text/javascript" src="js/jquery.json.js"></script>
 <script type="text/javascript" src="js/QTransform.js"></script>
-<script type="text/javascript" src="js/jquery-ui.js"></script>
+<script type="text/javascript" src="js/jquery-ui.min.js"></script>
 <script type="text/javascript" src="js/cah.js"></script>
 <script type="text/javascript" src="js/cah.config.js"></script>
 <%-- cah must be first, ajax must be before app. app probably has to be last. --%>
@@ -55,6 +69,7 @@ HttpSession hSession = request.getSession(true);
 <script type="text/javascript" src="js/cah.card.js"></script>
 <script type="text/javascript" src="js/cah.cardset.js"></script>
 <script type="text/javascript" src="js/cah.game.js"></script>
+<script type="text/javascript" src="js/cah.preferences.js"></script>
 <script type="text/javascript" src="js/cah.longpoll.js"></script>
 <script type="text/javascript" src="js/cah.longpoll.handlers.js"></script>
 <script type="text/javascript" src="js/cah.ajax.js"></script>
@@ -62,68 +77,62 @@ HttpSession hSession = request.getSession(true);
 <script type="text/javascript" src="js/cah.ajax.handlers.js"></script>
 <script type="text/javascript" src="js/cah.app.js"></script>
 <link rel="stylesheet" type="text/css" href="cah.css" media="screen" />
-<link rel="stylesheet" type="text/css" href="jquery-ui.css" media="screen" />
-<%--
+<link rel="stylesheet" type="text/css" href="jquery-ui.min.css" media="screen" />
 <jsp:include page="analytics.jsp" />
---%>
 </head>
-<body>
-
-<%--
-<div id="browser" class="hide">
-  <div id="browser_inner">
-	  <p>Pretend You're Xyzzy is known to have graphical glitches in
-	  <span id="browser_name">$BROWSER_NAME</span>. The game should work,
-	  but it looks much better in <a href="http://google.com/chrome/">Google Chrome.</a></p>
-	  <p>We will not bug you about this again after you dismiss this dialog.</p>
-	  <input type="button" id="browser_ok" value="Okay, I Understand" />
-  </div>
-</div>
---%>
+<body id="gamebody">
 
 <div id="welcome">
-  <h1>
-    Pretend You're <dfn style="border-bottom: 1px dotted black"
+  <div id="tweetbox">
+    <h3>Recent tweets (mainly server status updates)</h3>
+    <a class="twitter-timeline" data-height="500" data-dnt="true" data-theme="light"
+    href="https://twitter.com/_PYX_?ref_src=twsrc%5Etfw">Tweets by _PYX_</a>
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  </div>
+  <h1 tabindex="0">
+    Pretend You're <dfn
     title="Xyzzy is an Artificial Unintelligence bot. You'll be making more sense than him in this game.">
     Xyzzy</dfn>
   </h1>
   <h3>A <a href="http://cardsagainsthumanity.com/">Cards Against Humanity</a> clone.</h3>
   <p>
-   Read the Cards Against Humanity rules <a href="CAH_Rules.pdf">here</a>
+    If this is your first time playing, you may wish to read <a href="index.jsp">the changelog and
+    list of known issues</a>.
   </p>
   <p>
-    This webapp is a modified version of ajanata's PYX, and is still in development. There will be bugs, but hopefully they won't affect gameplay
-    very much. To assist with development, <strong>all traffic on this server is logged.</strong>
+    Your computer's IP address will <strong>always</strong> be logged when you load the game client.
+    It is not tied in any way to your username, except possibly if a server error occurs. Gameplay
+    results are logged permanently, but without information identifying you.
   </p>
-  <p>
-    If this is your first time playing, you may wish to read <a href="/">the changelog and list of
-    known issues.</a>
-  </p>
-  <p>Most recent update: 9 January 2013:</p>
+  <p tabindex="0">Most recent update: 3 September 2018:</p>
   <ul>
-    <li>New stylesheet from timsookram.</li>
-    <li>New card sets. The Holiday Pack was added about a month ago, the MLP pack got lost in the
-    server migration and has been restored, and another custom card set has been added from the fine
-    folks over at Very Serious. This card set has a decent amount of in-jokes, though, so you may
-    want to skip it for now. I'll pull out the universally funny cards later into another set.
-      <ul><li>I haven't forgotten about the other card sets that have been sent in. I'll get to
-      those later this week. I did this card set first since it was sent to me in a format that I
-      could import directly into the database.</li></ul>
-    </li>
-    <li>Plugged a hole that would let any especially crafty user pretend to be an administrator.
-    This was done entirely at the firewall and web server level and required no code change to the
-    game itself.</li>
-    <li>Increased maximum game limit from 60 to 75.</li>
+    <li>All chat and fill-in-the-blank cards have been disabled. If you're still out of the loop,
+    <a href="https://gist.githubusercontent.com/ajanata/07ededdb584f7bb77a8c7191d3a4bbcc/raw/e76faacc19c2bb598a1a8fd94b9ebcb29c5502e0">
+    here's why.</a></li>
   </ul>
+  <h2>The servers are incredibly busy right now. There are several servers to try, there will be
+  room elsewhere! <a href='https://pretendyoure.xyz/zy'>CLICK HERE</a> to see the server list. As
+  long as you're on the same server as your friends, you can play together. Please stop crowding
+  pyx-1 ("The Biggest, Blackest Dick").</h2>
   <div id="nickbox">
-    Nickname: <input type="text" id="nickname" value="" maxlength="30" />
+    <label for="nickname">Nickname:</label>
+    <input type="text" id="nickname" value="" maxlength="30" role="textbox"
+        aria-label="Enter your nickname." data-lpignore="true" />
+    <label for="idcode">
+    <dfn title="Only available via HTTPS. Provide a secret identification code to positively identify yourself in the chat.">
+    Optional identification code:</dfn></label>
+    <input type="password" id="idcode" value="" maxlength="100" disabled="disabled"
+        aria-label="Optionally enter an identification code." />
+    <a href="https://github.com/ajanata/PretendYoureXyzzy/wiki/Identification-Codes">(Help)</a>
     <input type="button" id="nicknameconfirm" value="Set" />
     <span id="nickbox_error" class="error"></span>
   </div>
+  <p><a href="privacy.html"><strong>Hey, this is important:</strong> Read the privacy page for
+  details about what gameplay information is collected and how it's shared.</a></p>
   <p>
     Pretend You're Xyzzy is a Cards Against Humanity clone, which is available at
-    <a href="http://www.cardsagainsthumanity.com/">cardsagainsthumanity.com</a>, where you can buy it
-    or download and print it out yourself. It is distributed under a
+    <a href="http://www.cardsagainsthumanity.com/">cardsagainsthumanity.com</a>, where you can buy
+    it or download and print it out yourself. It is distributed under a
     <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons - Attribution -
     Noncommercial - Share Alike license</a>. This web version is in no way endorsed or sponsored by
     cardsagainsthumanity.com. You may download the source code to this version from
@@ -138,11 +147,18 @@ HttpSession hSession = request.getSession(true);
     <div id="menubar_left">
       <input type="button" id="refresh_games" class="hide" value="Refresh Games" />
       <input type="button" id="create_game" class="hide" value="Create Game" />
+      <input type="text" id="filter_games" class="hide" placeholder="Filter games by keyword"
+          data-lpignore="true"/>
+
       <input type="button" id="leave_game" class="hide" value="Leave Game" />
       <input type="button" id="start_game" class="hide" value="Start Game" />
+      <input type="button" id="stop_game" class="hide" value="Stop Game" />
     </div>
     <div id="menubar_right">
       Current timer duration: <span id="current_timer">0</span> seconds
+      <input type="button" id="view_cards" value="View Cards"
+          title="Open a new window to view all cards in the game."
+          onclick="window.open('viewcards.jsp', 'viewcards');" />
       <input type="button" id="logout" value="Log out" />
     </div>
   </div>
@@ -159,47 +175,107 @@ HttpSession hSession = request.getSession(true);
   <div id="tabs">
     <ul>
       <li><a href="#tab-preferences" class="tab-button">User Preferences</a></li>
+      <li><a href="#tab-gamelist-filters" class="tab-button">Game List Filters</a></li>
       <li><a href="#tab-global" class="tab-button" id="button-global">Global Chat</a></li>
     </ul>
     <div id="tab-preferences">
-      <input type="button" value="Save" onclick="save_preferences();" />
-      <input type="button" value="Revert" onclick="load_preferences();" />
-      <label for="hide_connect_quit">Hide connect/quit events: </label>
+      <input type="button" value="Save" onclick="cah.Preferences.save();" />
+      <input type="button" value="Revert" onclick="cah.Preferences.load();" />
+      <label for="hide_connect_quit">
+        <dfn
+          title="Even with this unselected, you might not see these events if the server is configured to not send them.">
+            Hide connect and quit events:
+        </dfn>
+      </label>
       <input type="checkbox" id="hide_connect_quit" />
       <br />
-      <label for="ignore_list">Ignore list, one name per line:</label>
+      <label for="ignore_list">Chat ignore list, one name per line:</label>
       <br/>
       <textarea id="ignore_list" style="width: 200px; height: 150px"></textarea>
+      <br/>
+      <label for="no_persistent_id">
+        <dfn title="Even with this selected, your card plays for a single session will be tracked.">
+          Opt-out of card play tracking between sessions:
+        </dfn>
+      </label>
+      <input type="checkbox" id="no_persistent_id" />
+    </div>
+    <div id="tab-gamelist-filters">
+      You will have to click Refresh Games after saving any changes here.
+      <div style="text-align: right; width:100%">
+        <input type="button" value="Save" onclick="cah.Preferences.save();" />
+        <input type="button" value="Revert" onclick="cah.Preferences.load();" />
+      </div>
+      <fieldset>
+        <legend>Card set filters</legend>
+        <div class="cardset_filter_list">
+          <span title="Any game which uses at least one of these card sets will not be shown in the game list.">
+            Do not show any games with these card sets:
+          </span>
+          <select id="cardsets_banned" multiple="multiple"></select>
+          <div class="buttons">
+            <input type="button" id="banned_remove" value="Remove --&gt;"
+              onclick="cah.Preferences.transferCardSets('banned', 'neutral')" />
+          </div>
+        </div>
+        <div class="cardset_filter_list">
+          <span>Do not require or ban these card sets:</span>
+          <select id="cardsets_neutral" multiple="multiple"></select>
+          <div class="buttons">
+            <input type="button" id="banned_add" value="&lt;-- Ban"
+                onclick="cah.Preferences.transferCardSets('neutral', 'banned')" />
+            <input type="button" id="required_add" value="Require --&gt;"
+                onclick="cah.Preferences.transferCardSets('neutral', 'required')" />
+          </div>
+        </div>
+        <div class="cardset_filter_list">
+          <span title="Any game that does not use all of these card sets will not be shown in the game list.">
+            Only show games with these card sets:
+          </span>
+          <select id="cardsets_required" multiple="multiple"></select>
+          <div class="buttons">
+            <input type="button" id="required_remove" value="&lt;-- Remove"
+                onclick="cah.Preferences.transferCardSets('required', 'neutral')" />
+          </div>
+        </div>
+      </fieldset>
     </div>
     <div id="tab-global">
-      <div id="log"></div>
-      <input type="text" id="chat" maxlength="200" />
-      <input type="button" id="chat_submit" value="Chat" />
+      <div class="log"></div>
+      <input type="text" class="chat" maxlength="200" aria-label="Type here to chat."
+          data-lpignore="true" />
+      <input type="button" class="chat_submit" value="Chat" />
     </div>
   </div>
 </div>
 
 <!-- Template for game lobbies in the game list. -->
 <div class="hide">
-	<div id="gamelist_lobby_template" class="gamelist_lobby">
+	<div id="gamelist_lobby_template" class="gamelist_lobby" tabindex="0">
 	<div class="gamelist_lobby_left">
 	    	<h3>
 			<span class="gamelist_lobby_host">host</span>'s Game
-			(<span class="gamelist_lobby_player_count"></span>/<span class="gamelist_lobby_max_players"></span>)
+			(<span class="gamelist_lobby_player_count"></span>/<span class="gamelist_lobby_max_players"></span>,
+			<span class="gamelist_lobby_spectator_count"></span>/<span class="gamelist_lobby_max_spectators"></span>)
 			<span class="gamelist_lobby_status">status</span>
 		</h3>
 		<div>
 		<strong>Players:</strong>
 		<span class="gamelist_lobby_players">host, player1, player2</span>
 		</div>
+		<div>
+		<strong>Spectators:</strong>
+		<span class="gamelist_lobby_spectators">spectator1</span>
+		</div>
 		<div><strong>Goal:</strong> <span class="gamelist_lobby_goal"></span></div>
 		<div>
 		<strong>Cards:</strong> <span class="gamelist_lobby_cardset"></span>
 		</div>
-		<div class=hide>Game <span class="gamelist_lobby_id">###</span></div>
+		<div class="hide">Game <span class="gamelist_lobby_id">###</span></div>
 	  </div>
 	  <div class="gamelist_lobby_right">
 	    <input type="button" class="gamelist_lobby_join" value="Join" />
+	    <input type="button" class="gamelist_lobby_spectate" value="Spectate" />
 	  </div>
 	</div>
 </div>
@@ -235,7 +311,7 @@ HttpSession hSession = request.getSession(true);
 <!-- Template for face-up white cards. -->
 <div class="hide">
 	<div id="white_up_template" class="card whitecard">
-	  <span class="card_text">The quick brown fox jumped over the lazy dog.</span>
+	  <span class="card_text" role="button" tabindex="0">The quick brown fox jumped over the lazy dog.</span>
 	  <div class="logo">
 	    <div class="logo_1 logo_element">
 	    </div>
@@ -264,7 +340,8 @@ HttpSession hSession = request.getSession(true);
       <input type="button" class="game_show_last_round game_menu_bar" value="Show Last Round"
           disabled="disabled" />
       <input type="button" class="game_show_options game_menu_bar" value="Hide Game Options" />
-      <div class="game_message">
+      <label class="game_menu_bar checkbox"><input type="checkbox" class="game_animate_cards" checked="checked" /><span> Animate Cards</span></label>
+      <div class="game_message" role="status">
         Waiting for server...
       </div>
     </div>
@@ -272,8 +349,10 @@ HttpSession hSession = request.getSession(true);
       <div style="width:100%; height:100%;">
         <div class="game_left_side">
           <div class="game_black_card_wrapper">
-            The black card for <span class="game_black_card_round_indicator">this round is</span>:
-            <div class="game_black_card">
+            <span tabindex="0">The black card for
+                <span class="game_black_card_round_indicator">this round is</span>:
+            </span>
+            <div class="game_black_card" tabindex="0">
             </div>
           </div>
           <input type="button" class="confirm_card" value="Confirm Selection" />
@@ -282,7 +361,7 @@ HttpSession hSession = request.getSession(true);
         </div>
         <div class="game_right_side hide">
           <div class="game_right_side_box game_white_card_wrapper">
-            The white cards played this round are:
+            <span tabindex="0">The white cards played this round are:</span>
             <div class="game_white_cards game_right_side_cards">
             </div>
           </div>
@@ -297,7 +376,7 @@ HttpSession hSession = request.getSession(true);
         <div class="game_hand_filter hide">
           <span class="game_hand_filter_text"></span>
         </div>
-        <span class="your_hand">Your Hand</span>
+        <span class="your_hand" tabindex="0">Your Hand</span>
         <div class="game_hand_cards">
         </div>
       </div>
@@ -308,15 +387,16 @@ HttpSession hSession = request.getSession(true);
 <!-- Template for scoreboard container. Holder for design. -->
 <div style="height: 215px; border: 1px solid black;" class="hide">
 	<div id="scoreboard_template" class="scoreboard">
+    <div class="game_message" tabindex="0">Scoreboard</div>
 	</div>
 </div>
 
 <!-- Template for scoreboard score card. Holder for design. -->
 <div class="scoreboard hide" style="height: 215px;">
-	<div id="scorecard_template" class="scorecard">
+	<div id="scorecard_template" class="scorecard" tabindex="0">
 	  <span class="scorecard_player">PlayerName</span>
 	  <div class="clear"></div>
-	  <span class="scorecard_score">0</span> <span class="scorecard_point_title">Awesome Point<span class="scorecard_s">s</span></span>
+	  <span class="scorecard_points"><span class="scorecard_score">0</span> <span class="scorecard_point_title">Awesome Point<span class="scorecard_s">s</span></span></span>
 	  <span class="scorecard_status">Status</span>
 	</div>
 </div>
@@ -345,32 +425,90 @@ HttpSession hSession = request.getSession(true);
       <legend>Game options:</legend>
       <label id="score_limit_template_label" for="score_limit_template">Score limit:</label>
       <select id="score_limit_template" class="score_limit">
-        <% int defaultScoreLimit = 8; for (int i = 4; i <= 69; i++) { %>
-          <option <%= i == defaultScoreLimit ? "selected='selected' " : "" %>value="<%= i %>"><%= i %></option>
+        <%
+          for (int i = injector.getInstance(Key.get(Integer.class, MinScoreLimit.class)); i <= injector.getInstance(Key.get(Integer.class, MaxScoreLimit.class)); i++) {
+        %>
+          <option <%=(i == injector.getInstance(Key.get(Integer.class, DefaultScoreLimit.class))) ? "selected='selected' " : "" %>value="<%= i %>"><%= i %></option>
         <% } %>
       </select>
       <br/>
       <label id="player_limit_template_label" for="player_limit_template">Player limit:</label>
-      <select id="player_limit_template" class="player_limit">
-        <% int defaultPlayerLimit = 10; for (int i = 3; i <= 20; i++) { %>
-          <option <%= i == defaultPlayerLimit ? "selected='selected' " : "" %>value="<%= i %>"><%= i %></option>
+      <select id="player_limit_template" class="player_limit"
+          aria-label="Player limit. Having more than 10 players may cause issues both for screen readers and traditional browsers.">
+        <%
+          for (int i = injector.getInstance(Key.get(Integer.class, MinPlayerLimit.class)); i <= injector.getInstance(Key.get(Integer.class, MaxPlayerLimit.class)); i++) {
+        %>
+          <option <%= i == injector.getInstance(Key.get(Integer.class, DefaultPlayerLimit.class)) ? "selected='selected' " : "" %>value="<%= i %>"><%= i %></option>
         <% } %>
       </select>
       Having more than 10 players may get cramped!
       <br/>
+      <label id="spectator_limit_template_label" for="spectator_limit_template">Spectator limit:</label>
+      <select id="spectator_limit_template" class="spectator_limit"
+          aria-label="Spectator limit.">
+        <%
+          for (int i = injector.getInstance(Key.get(Integer.class, MinSpectatorLimit.class)); i <= injector.getInstance(Key.get(Integer.class, MaxSpectatorLimit.class)); i++) {
+        %>
+          <option <%= i == injector.getInstance(Key.get(Integer.class, DefaultSpectatorLimit.class)) ? "selected='selected' " : "" %>value="<%= i %>"><%= i %></option>
+        <% } %>
+      </select>
+      Spectators can watch and chat, but not actually play. Not even as Czar.
+      <br/>
+      <label id="timer_multiplier_template_label" for="timer_multiplier_template"
+          title="Players will be skipped if they have not played within a reasonable amount of time. This is the multiplier to apply to the default timeouts, or Unlimited to disable timeouts.">
+          Idle timer multiplier:
+      </label>
+      <select id="timer_multiplier_template" class="timer_multiplier"
+          title="Players will be skipped if they have not played within a reasonable amount of time. This is the multiplier to apply to the default timeouts, or Unlimited to disable timeouts."
+          aria-label="Players will be skipped if they have not played within a reasonable amount of time. This is the multiplier to apply to the default timeouts, or Unlimited to disable timeouts.">
+      	<option value="0.25x">0.25x</option>
+      	<option value="0.5x">0.5x</option>
+      	<option value="0.75x">0.75x</option>
+      	<option selected="selected" value="1x">1x</option>
+      	<option value="1.25x">1.25x</option>
+      	<option value="1.5x">1.5x</option>
+      	<option value="1.75x">1.75x</option>
+      	<option value="2x">2x</option>
+      	<option value="2.5x">2.5x</option>
+      	<option value="3x">3x</option>
+      	<option value="4x">4x</option>
+      	<option value="5x">5x</option>
+      	<option value="10x">10x</option>
+      	<option value="Unlimited">Unlimited</option>
+      </select>
+      <br/>
       <fieldset class="card_sets">
         <legend>Card Sets</legend>
-        Select at least one of: <span class="base_card_sets"></span>
-        <br/>
-        Select any number of: <span class="extra_card_sets"></span>
+        <span class="base_card_sets"></span>
+        <span class="extra_card_sets"></span>
       </fieldset>
+      <% if (allowBlankCards) { %>
+        <br/>
+        <label id="blanks_limit_label" title="Blank cards allow a player to type in their own answer.">
+          Also include <select id="blanks_limit_template" class="blanks_limit">
+          <%
+            for (int i = injector.getInstance(Key.get(Integer.class, MinBlankCardLimit.class)); i <= injector.getInstance(Key.get(Integer.class, MaxBlankCardLimit.class)); i++) {
+          %>
+            <option <%= i == injector.getInstance(Key.get(Integer.class, DefaultBlankCardLimit.class)) ? "selected='selected' " : "" %>value="<%= i %>"><%= i %></option>
+          <% } %>
+          </select> blank white cards.
+        </label>
+      <% } %>
       <br/>
       <label id="game_password_template_label" for="game_password_template">Game password:</label>
-      <input type="text" id="game_password_template" class="game_password" />
+      <input type="text" id="game_password_template" class="game_password"
+          aria-label="Game password. You must tab outside of the box to apply the password."/>
+      <input type="password" id="game_fake_password_template" class="game_fake_password hide" />
       You must click outside the box to apply the password.
+      <input type="checkbox" id="game_hide_password_template" class="game_hide_password" />
+      <label id="game_hide_password_template_label" for="game_hide_password_template"
+          aria-label="Hide password from your screen."
+          title="Hides the password from your screen, so people watching your stream can't see it.">
+        Hide password.
+      </label>
     </fieldset>
   </div>
 </div>
-
+<div style="position:absolute; left:-99999px" role="alert" id="aria-notifications"></div>
 </body>
 </html>

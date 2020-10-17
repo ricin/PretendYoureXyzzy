@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Andy Janata
+ * Copyright (c) 2012-2018, Andy Janata
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted
@@ -102,6 +102,17 @@ cah.ajax.Builder.prototype.withNickname = function(nickname) {
 
 /**
  * @param {string}
+ *          persistentId Persistent ID to use in the request.
+ * @returns {cah.ajax.Builder} This object.
+ */
+cah.ajax.Builder.prototype.withPersistentId = function(persistentId) {
+  this.assertNotExecuted_();
+  this.data[cah.$.AjaxRequest.PERSISTENT_ID] = persistentId;
+  return this;
+};
+
+/**
+ * @param {string}
  *          message Message field to use in the request.
  * @returns {cah.ajax.Builder} This object.
  */
@@ -134,35 +145,13 @@ cah.ajax.Builder.prototype.withCardId = function(cardId) {
 };
 
 /**
- * @param {Array}
- *          cardSets List of card set ids to use in the request.
+ * @param {Object}
+ *          options Game options to use in the request.
  * @returns {cah.ajax.Builder} This object.
  */
-cah.ajax.Builder.prototype.withCardSets = function(cardSets) {
+cah.ajax.Builder.prototype.withGameOptions = function(options) {
   this.assertNotExecuted_();
-  this.data[cah.$.AjaxRequest.CARD_SETS] = cardSets.join(',');
-  return this;
-};
-
-/**
- * @param {number}
- *          playerLimit Player limit field to use in the request.
- * @returns {cah.ajax.Builder} This object.
- */
-cah.ajax.Builder.prototype.withPlayerLimit = function(playerLimit) {
-  this.assertNotExecuted_();
-  this.data[cah.$.AjaxRequest.PLAYER_LIMIT] = playerLimit;
-  return this;
-};
-
-/**
- * @param {number}
- *          scoreLimit Score limit field to use in the request.
- * @returns {cah.ajax.Builder} This object.
- */
-cah.ajax.Builder.prototype.withScoreLimit = function(scoreLimit) {
-  this.assertNotExecuted_();
-  this.data[cah.$.AjaxRequest.SCORE_LIMIT] = scoreLimit;
+  this.data[cah.$.AjaxRequest.GAME_OPTIONS] = $.toJSON(options);
   return this;
 };
 
@@ -174,6 +163,50 @@ cah.ajax.Builder.prototype.withScoreLimit = function(scoreLimit) {
 cah.ajax.Builder.prototype.withPassword = function(password) {
   this.assertNotExecuted_();
   this.data[cah.$.AjaxRequest.PASSWORD] = password;
+  return this;
+};
+
+/**
+ * @param {boolean}
+ *          wall Whether or not this is a warn-all ("wall").
+ * @returns {cah.ajax.Builder} This object.
+ */
+cah.ajax.Builder.prototype.withWall = function(wall) {
+  this.assertNotExecuted_();
+  this.data[cah.$.AjaxRequest.WALL] = wall;
+  return this;
+};
+
+/**
+ * @param {boolean}
+ *          emote Whether or not this is an emote
+ * @returns {cah.ajax.Builder} This object.
+ */
+cah.ajax.Builder.prototype.withEmote = function(emote) {
+  this.assertNotExecuted_();
+  this.data[cah.$.AjaxRequest.EMOTE] = emote;
+  return this;
+};
+
+/**
+ * @param {string}
+ *          id The Cardcast ID of the deck to add.
+ * @returns {cah.ajax.Builder} This object.
+ */
+cah.ajax.Builder.prototype.withCardcastId = function(id) {
+  this.assertNotExecuted_();
+  this.data[cah.$.AjaxRequest.CARDCAST_ID] = id;
+  return this;
+};
+
+/**
+ * @param {string}
+ *          id The user's identification code.
+ * @returns {cah.ajax.Builder} This object.
+ */
+cah.ajax.Builder.prototype.withIdCode = function(idCode) {
+  this.assertNotExecuted_();
+  this.data[cah.$.AjaxRequest.ID_CODE] = idCode;
   return this;
 };
 

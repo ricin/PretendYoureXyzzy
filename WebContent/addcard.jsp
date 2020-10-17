@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <%--
-Copyright (c) 2012, Andy Janata
+Copyright (c) 2012-2018, Andy Janata
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted
@@ -27,21 +27,29 @@ Administration tools.
 @author Andy Janata (ajanata@socialgamer.net)
 --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="com.google.inject.Injector" %>
+<%@ page import="com.google.inject.Key" %>
+<%@ page import="com.google.inject.TypeLiteral" %>
+<%@ page import="net.socialgamer.cah.CahModule.Admins" %>
 <%@ page import="net.socialgamer.cah.HibernateUtil" %>
-<%@ page import="net.socialgamer.cah.db.BlackCard" %>
-<%@ page import="net.socialgamer.cah.db.WhiteCard" %>
+<%@ page import="net.socialgamer.cah.StartupUtils" %>
+<%@ page import="net.socialgamer.cah.db.PyxBlackCard" %>
+<%@ page import="net.socialgamer.cah.db.PyxWhiteCard" %>
 <%@ page import="net.socialgamer.cah.RequestWrapper" %>
 <%@ page import="org.hibernate.Session" %>
 <%@ page import="org.hibernate.Transaction" %>
+<%@ page import="java.util.Set" %>
 <%
 RequestWrapper wrapper = new RequestWrapper(request);
-String remoteAddr = wrapper.getRemoteAddr();
-// TODO better access control than hard-coding IP addresses.
-if (!(remoteAddr.equals("0:0:0:0:0:0:0:1") || remoteAddr.equals("127.0.0.1") ||
-    remoteAddr.startsWith("10.") || remoteAddr.equals("98.210.81.226"))) {
+ServletContext servletContext = pageContext.getServletContext();
+Injector injector = (Injector) servletContext.getAttribute(StartupUtils.INJECTOR);
+Set<String> admins = injector.getInstance(Key.get(new TypeLiteral<Set<String>>(){}, Admins.class));
+if (!admins.contains(wrapper.getRemoteAddr())) {
   response.sendError(403, "Access is restricted to known hosts");
   return;
 }
+
+final String watermark = request.getParameter("watermark") != null ? request.getParameter("watermark") : "";
 
 String error = "";
 String status = "";
@@ -71,10 +79,11 @@ if (color != null) {
         final Session s = HibernateUtil.instance.sessionFactory.openSession();
         final Transaction transaction = s.beginTransaction();
         transaction.begin();
-        final BlackCard card = new BlackCard();
+        final PyxBlackCard card = new PyxBlackCard();
         card.setText(text);
         card.setPick(pick);
         card.setDraw(draw);
+        card.setWatermark(watermark);
         s.save(card);
         transaction.commit();
         s.close();
@@ -91,17 +100,17 @@ if (color != null) {
       final Session s = HibernateUtil.instance.sessionFactory.openSession();
       final Transaction transaction = s.beginTransaction();
       transaction.begin();
-      final WhiteCard card = new WhiteCard();
+      final PyxWhiteCard card = new PyxWhiteCard();
       card.setText(text);
+      card.setWatermark(watermark);
       s.save(card);
       transaction.commit();
       s.close();
       status = "Saved '" + text + "'.";
       field = "white";
-    }    
+    }
   }
 }
-
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -123,12 +132,18 @@ if (color != null) {
 <br/>
 <label for="draw">Draw</label><input type="text" id="draw" name="draw" size="3" value="0" />
 <br/>
+<label for="watermark_b">Watermark</label>
+<input type="text" id="watermark_b" name="watermark" size="3" maxlength="5" value="<%= watermark %>" />
+<br/>
 <input type="submit" value="Add card" />
 </form>
 <h1 id="white">White Card</h1>
 <form method="post" action="addcard.jsp">
 <input type="hidden" name="color" value="white" />
 <label for="white_text">Card Text</label><input type="text" id="white_text" name="text" size="150" />
+<br/>
+<label for="watermark_w">Watermark</label>
+<input type="text" id="watermark_w" name="watermark" size="3" maxlength="5" value="<%= watermark %>" />
 <br/>
 <input type="submit" value="Add card" />
 </form>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <%--
-Copyright (c) 2012, Andy Janata
+Copyright (c) 2012-2018, Andy Janata
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted
@@ -31,12 +31,13 @@ Administration tools.
 <%@ page import="com.google.inject.Key" %>
 <%@ page import="com.google.inject.TypeLiteral" %>
 <%@ page import="net.socialgamer.cah.RequestWrapper" %>
+<%@ page import="net.socialgamer.cah.StartupUtils" %>
+<%@ page import="net.socialgamer.cah.CahModule.Admins" %>
 <%@ page import="net.socialgamer.cah.CahModule.BanList" %>
 <%@ page import="net.socialgamer.cah.Constants.DisconnectReason" %>
 <%@ page import="net.socialgamer.cah.Constants.LongPollEvent" %>
 <%@ page import="net.socialgamer.cah.Constants.LongPollResponse" %>
 <%@ page import="net.socialgamer.cah.Constants.ReturnableData" %>
-<%@ page import="net.socialgamer.cah.StartupUtils" %>
 <%@ page import="net.socialgamer.cah.data.ConnectedUsers" %>
 <%@ page import="net.socialgamer.cah.data.QueuedMessage" %>
 <%@ page import="net.socialgamer.cah.data.QueuedMessage.MessageType" %>
@@ -49,16 +50,13 @@ Administration tools.
 
 <%
 RequestWrapper wrapper = new RequestWrapper(request);
-String remoteAddr = wrapper.getRemoteAddr();
-// TODO better access control than hard-coding IP addresses.
-if (!(remoteAddr.equals("0:0:0:0:0:0:0:1") || remoteAddr.equals("127.0.0.1") ||
-    remoteAddr.equals("98.210.81.226") || remoteAddr.startsWith("10."))) {
+ServletContext servletContext = pageContext.getServletContext();
+Injector injector = (Injector) servletContext.getAttribute(StartupUtils.INJECTOR);
+Set<String> admins = injector.getInstance(Key.get(new TypeLiteral<Set<String>>(){}, Admins.class));
+if (!admins.contains(wrapper.getRemoteAddr())) {
   response.sendError(403, "Access is restricted to known hosts");
   return;
 }
-
-ServletContext servletContext = pageContext.getServletContext();
-Injector injector = (Injector) servletContext.getAttribute(StartupUtils.INJECTOR);
 
 ConnectedUsers connectedUsers = injector.getInstance(ConnectedUsers.class);
 Set<String> banList = injector.getInstance(Key.get(new TypeLiteral<Set<String>>(){}, BanList.class));
@@ -102,7 +100,7 @@ if (banParam != null) {
    user.enqueueMessage(qm);
 
    connectedUsers.removeUser(user, DisconnectReason.BANNED);
-   banList.add(user.getHostName());
+   banList.add(user.getHostname());
   }
   response.sendRedirect("admin.jsp");
   return;
@@ -114,6 +112,16 @@ if (unbanParam != null) {
   banList.remove(unbanParam);
   response.sendRedirect("admin.jsp");
   return;
+}
+
+String reloadLog4j = request.getParameter("reloadLog4j");
+if ("true".equals(reloadLog4j)) {
+  StartupUtils.reconfigureLogging(this.getServletContext());
+}
+
+String reloadProps = request.getParameter("reloadProps");
+if ("true".equals(reloadProps)) {
+  StartupUtils.reloadProperties(this.getServletContext());
 }
 
 %>
@@ -206,7 +214,7 @@ User list:
 	  %>
 	  <tr>
 	    <td><%= u.getNickname() %></td>
-	    <td><%= u.getHostName() %></td>
+	    <td><%= u.getHostname() %></td>
 	    <td>
         <a href="?kick=<%= u.getNickname() %>">Kick</a>
         <a href="?ban=<%= u.getNickname() %>">Ban</a>
@@ -218,12 +226,19 @@ User list:
 </table>
 
 <%
+// TODO remove this "verbose logging" crap now that log4j is working.
 Boolean verboseDebugObj = (Boolean) servletContext.getAttribute(StartupUtils.VERBOSE_DEBUG); 
 boolean verboseDebug = verboseDebugObj != null ? verboseDebugObj.booleanValue() : false;
 %>
 <p>
   Verbose logging is currently <strong><%= verboseDebug ? "ON" : "OFF" %></strong>.
   <a href="?verbose=on">Turn on.</a> <a href="?verbose=off">Turn off.</a>
+</p>
+<p>
+  <a href="?reloadLog4j=true">Reload log4j.properties.</a>
+</p>
+<p>
+  <a href="?reloadProps=true">Reload pyx.properties.</a>
 </p>
 
 </body>
